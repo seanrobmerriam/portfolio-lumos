@@ -1,0 +1,103 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import Fieldset from "@/components/form/Fieldset.astro";
+import Input from "@/components/form/Input.astro";
+import ButtonWrapper from "@/components/wrapper/ButtonWrapper.astro";
+import Button from "@/components/Button.astro";
+
+interface Props extends HTMLAttributes<"form"> {
+  /** Set to `false` to omit the component. */
+  render?: boolean;
+  /** Page to open after signing in. */
+  redirectTo?: string;
+}
+
+const { render = true, redirectTo = "/admin", class: className, ...rest } =
+  Astro.props;
+---
+
+{
+  render && (
+    <form
+      class:list={["auth-sign-in_wrap", className]}
+      data-redirect={redirectTo}
+      novalidate
+      {...rest}
+    >
+      <Fieldset legend="Account" legendStyle="hidden">
+        <Input
+          name="name"
+          label="Name (new accounts)"
+          placeholder="Your name"
+          autocomplete="name"
+        />
+        <Input variant="email" name="email" required />
+        <Input
+          variant="password"
+          name="password"
+          minlength={8}
+          required
+        />
+      </Fieldset>
+      <p class="auth-sign-in_error text-style-main" role="alert" hidden />
+      <ButtonWrapper marginTop="4">
+        <Button type="submit" value="sign-in">Sign In</Button>
+        <Button type="submit" value="sign-up" emphasis="secondary">
+          Create Account
+        </Button>
+      </ButtonWrapper>
+    </form>
+  )
+}
+
+<script>
+  import { createAuthClient, isAuthError } from "@neon/auth";
+
+  const authClient = createAuthClient(new URL("/api/auth", location.origin).href);
+
+  for (const form of document.querySelectorAll<HTMLFormElement>(".auth-sign-in_wrap")) {
+    const error = form.querySelector<HTMLElement>(".auth-sign-in_error");
+    const buttons = form.querySelectorAll<HTMLButtonElement>("button[type=submit]");
+
+    const fail = (message: string) => {
+      if (!error) return;
+      error.textContent = message;
+      error.hidden = false;
+    };
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (error) error.hidden = true;
+      if (!form.reportValidity()) return;
+
+      const mode = (event.submitter as HTMLButtonElement | null)?.value;
+      const data = new FormData(form);
+      const email = String(data.get("email"));
+      const password = String(data.get("password"));
+      const name = String(data.get("name") ?? "").trim();
+
+      if (mode === "sign-up" && !name) return fail("Enter your name to create an account.");
+
+      buttons.forEach((button) => (button.disabled = true));
+      try {
+        const result =
+          mode === "sign-up"
+            ? await authClient.signUp.email({ email, password, name })
+            : await authClient.signIn.email({ email, password });
+        if (result.error) {
+          return fail(result.error.message ?? "That did not work. Please try again.");
+        }
+        location.assign(form.dataset.redirect ?? "/admin");
+      } catch (error) {
+        // The Neon client throws AuthApiError for rejected credentials.
+        fail(
+          isAuthError(error)
+            ? error.message
+            : "Could not reach the sign-in service. Please try again.",
+        );
+      } finally {
+        buttons.forEach((button) => (button.disabled = false));
+      }
+    });
+  }
+</script>

@@ -1,0 +1,72 @@
+---
+import Layout from "@/layouts/BaseLayout.astro";
+import Section from "@/components/wrapper/Section.astro";
+import ContentWrapper from "@/components/wrapper/ContentWrapper.astro";
+import Grid from "@/components/wrapper/Grid.astro";
+import Dropdown from "@/components/interactive/Dropdown.astro";
+
+---
+<Layout
+  theme="dark"
+  image="url('data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.35'%3E%3Cpath d='M50 50c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10c0 5.523-4.477 10-10 10s-10-4.477-10-10 4.477-10 10-10zM10 10c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10c0 5.523-4.477 10-10 10S0 25.523 0 20s4.477-10 10-10zm10 8c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8zm40 40c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E')"
+  overlap
+>
+<Section
+align="center"
+gap="0"
+containerClass="flex-grow"
+>
+
+<ContentWrapper
+
+variant="auto-width">
+
+<Grid 
+centered="true"
+class="gap-0"
+variant="columns"
+xsmall={3}
+small={4}
+medium={6}
+large={8}
+>
+<Dropdown 
+label="File"
+class="padding-inline-0">
+  <ul>
+    <li><a href="/guides">Guides</a></li>
+    <li><a href="/support">Support</a></li>
+  </ul>
+</Dropdown>
+<Dropdown label="Edit">
+  <ul>
+    <li><a href="/guides">Guides</a></li>
+    <li><a href="/support">Support</a></li>
+  </ul>
+</Dropdown>
+<Dropdown label="View">
+  <ul>
+    <li><a href="/guides">Guides</a></li>
+    <li><a href="/support">Support</a></li>
+  </ul>
+</Dropdown>
+<Dropdown label="Window">
+  <ul>
+    <li><a href="/guides">Guides</a></li>
+    <li><a href="/support">Support</a></li>
+  </ul>
+</Dropdown>
+<Dropdown label="Help">
+  <ul>
+    <li><a href="/guides">Guides</a></li>
+    <li><a href="/support">Support</a></li>
+  </ul>
+</Dropdown>
+
+</Grid>
+
+
+
+</ContentWrapper>
+</Section>
+</Layout>

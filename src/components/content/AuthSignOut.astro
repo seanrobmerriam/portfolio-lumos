@@ -1,0 +1,33 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import Button from "@/components/Button.astro";
+
+interface Props extends HTMLAttributes<"div"> {
+  /** Set to `false` to omit the component. */
+  render?: boolean;
+}
+
+const { render = true, class: className, ...rest } = Astro.props;
+---
+
+{
+  render && (
+    <div class:list={["auth-sign-out_wrap", className]} {...rest}>
+      <Button emphasis="secondary">Sign Out</Button>
+    </div>
+  )
+}
+
+<script>
+  import { createAuthClient } from "@neon/auth";
+
+  const authClient = createAuthClient(new URL("/api/auth", location.origin).href);
+
+  for (const wrap of document.querySelectorAll<HTMLElement>(".auth-sign-out_wrap")) {
+    wrap.querySelector("button")?.addEventListener("click", async () => {
+      await authClient.signOut();
+      // Full page load drops the realtime client and the previous user's rows.
+      location.assign("/auth/sign-in");
+    });
+  }
+</script>

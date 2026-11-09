@@ -1,0 +1,187 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import Paragraph from "@/components/typography/Paragraph.astro";
+
+interface Props extends HTMLAttributes<"div"> {
+  /** Set to `false` to omit the component. */
+  render?: boolean;
+  /** Live SQL API URL (`NEON_REALTIME_URL`). */
+  realtimeUrl: string;
+}
+
+const { render = true, realtimeUrl, class: className, ...rest } = Astro.props;
+---
+
+{
+  render && realtimeUrl && (
+    <div
+      class:list={["admin-submissions_wrap", className]}
+      data-realtime-url={realtimeUrl}
+      {...rest}
+    >
+      <Paragraph
+        class="admin-submissions_status"
+        variant="small"
+        role="status"
+        aria-live="polite"
+      >
+        Connecting…
+      </Paragraph>
+      <ol class="admin-submissions_list" aria-label="Contact submissions" />
+      <template class="admin-submissions_template">
+        <li class="admin-submissions_item">
+          <div class="admin-submissions_meta">
+            <h2 class="admin-submissions_name text-style-h5" />
+            <time class="admin-submissions_date text-style-small" />
+          </div>
+          <a class="admin-submissions_email text-style-small" />
+          <p class="admin-submissions_message text-style-main" />
+          <a class="admin-submissions_archive text-style-small">
+            Archived copy
+          </a>
+        </li>
+      </template>
+    </div>
+  )
+}
+
+<script>
+  import {
+    createRealtimeClient,
+    type LiveQuerySnapshot,
+    type SealedLiveQuery,
+  } from "@neon/realtime/client";
+  import type { ContactSubmission } from "@/lib/realtime.ts";
+
+  const RENEW_EARLY_MS = 10_000;
+  const RETRY_MS = 1_000;
+
+  class SignedOut extends Error {}
+
+  async function fetchSealed(): Promise<SealedLiveQuery<ContactSubmission>> {
+    const response = await fetch("/api/admin/submissions/live", { method: "POST" });
+    if (response.status === 401 || response.status === 403) throw new SignedOut();
+    if (!response.ok) throw new Error(`Seal failed: ${response.status}`);
+    return response.json();
+  }
+
+  for (const wrap of document.querySelectorAll<HTMLElement>(".admin-submissions_wrap")) {
+    const status = wrap.querySelector<HTMLElement>(".admin-submissions_status")!;
+    const list = wrap.querySelector<HTMLOListElement>(".admin-submissions_list")!;
+    const template = wrap.querySelector<HTMLTemplateElement>(".admin-submissions_template")!;
+    const dateFormat = new Intl.DateTimeFormat(undefined, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+
+    const renderItem = (row: ContactSubmission) => {
+      const item = template.content.firstElementChild!.cloneNode(true) as HTMLLIElement;
+      const part = <T extends HTMLElement>(name: string) =>
+        item.querySelector<T>(`.admin-submissions_${name}`)!;
+      item.dataset.id = row.id;
+      part("name").textContent = `${row.first_name} ${row.last_name}`;
+      part<HTMLTimeElement>("date").dateTime = row.created_at.toISOString();
+      part("date").textContent = dateFormat.format(row.created_at);
+      part<HTMLAnchorElement>("email").href = `mailto:${row.email}`;
+      part("email").textContent = row.email;
+      part("message").textContent = row.message;
+      const archive = part<HTMLAnchorElement>("archive");
+      if (row.archive_key) archive.href = `/api/admin/submissions/${row.id}/archive`;
+      else archive.remove();
+      return item;
+    };
+
+    const render = (snapshot: LiveQuerySnapshot<ContactSubmission>) => {
+      const rows = snapshot.data ?? [];
+      wrap.dataset.status = snapshot.status;
+      wrap.dataset.count = String(rows.length);
+      status.textContent =
+        snapshot.status === "live"
+          ? `Live · ${rows.length} submission${rows.length === 1 ? "" : "s"}`
+          : snapshot.status === "error"
+            ? `Live updates stopped: ${snapshot.error?.message}. Reload to retry.`
+            : snapshot.status === "stale"
+              ? "Reconnecting. Submissions may be out of date."
+              : "Connecting…";
+      list.replaceChildren(...rows.map(renderItem));
+    };
+
+    try {
+      const client = createRealtimeClient({ url: wrap.dataset.realtimeUrl! });
+      let sealed = await fetchSealed();
+      const subscription = client.subscribe(sealed);
+      subscription.onChange(render);
+
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      const schedule = (delay: number) => {
+        clearTimeout(timer);
+        timer = setTimeout(renew, delay);
+      };
+      const renew = async () => {
+        try {
+          sealed = await fetchSealed();
+        } catch (error) {
+          // A changed session needs a full page load, not a renewed query.
+          if (error instanceof SignedOut) return location.assign("/auth/sign-in");
+          return schedule(RETRY_MS);
+        }
+        schedule(Math.max(0, sealed.expiresAt - Date.now() - RENEW_EARLY_MS));
+        subscription.renew(sealed).catch(() => clearTimeout(timer));
+      };
+      schedule(Math.max(0, sealed.expiresAt - Date.now() - RENEW_EARLY_MS));
+
+      window.addEventListener("pagehide", () => {
+        clearTimeout(timer);
+        client.close();
+      });
+    } catch (error) {
+      if (error instanceof SignedOut) location.assign("/auth/sign-in");
+      else status.textContent = "Could not start live updates. Reload to retry.";
+    }
+  }
+</script>
+
+<style is:global>
+  @layer components {
+    .admin-submissions_wrap {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+
+    .admin-submissions_list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .admin-submissions_item {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      padding: var(--space-5);
+      border: var(--border-width) solid var(--border);
+      border-radius: var(--radius-main);
+    }
+
+    .admin-submissions_meta {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: var(--space-2);
+    }
+
+    .admin-submissions_name {
+      margin: 0;
+    }
+
+    .admin-submissions_message {
+      margin: 0;
+      white-space: pre-line;
+    }
+  }
+</style>

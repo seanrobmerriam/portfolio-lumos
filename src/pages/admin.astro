@@ -1,0 +1,40 @@
+---
+import { NEON_REALTIME_URL } from "astro:env/server";
+import Layout from "@/layouts/BaseLayout.astro";
+import Section from "@/components/wrapper/Section.astro";
+import ContentWrapper from "@/components/wrapper/ContentWrapper.astro";
+import Heading from "@/components/typography/Heading.astro";
+import Paragraph from "@/components/typography/Paragraph.astro";
+import Eyebrow from "@/components/typography/Eyebrow.astro";
+import AdminSubmissions from "@/components/content/AdminSubmissions.astro";
+import AuthSignOut from "@/components/content/AuthSignOut.astro";
+import { getAdmin } from "@/lib/auth.ts";
+
+export const prerender = false;
+
+const { admin, status } = await getAdmin();
+if (status === 401) return Astro.redirect("/auth/sign-in");
+if (status === 403) Astro.response.status = 403;
+Astro.response.headers.set("Cache-Control", "no-store");
+---
+
+<Layout title="Admin" description="Contact form submissions." theme="dark">
+  <!-- header -->
+  <Section paddingBottom="small">
+    <ContentWrapper variant="columns">
+      <Eyebrow>Admin</Eyebrow>
+      <Heading tag="h1" variant="h2">Contact submissions</Heading>
+      <Paragraph render={!!admin} maxWidth={40}>
+        Signed in as {admin?.email}. New submissions appear here as they arrive.
+      </Paragraph>
+      <Paragraph render={!admin} maxWidth={40}>
+        This account does not have the admin role.
+      </Paragraph>
+      <AuthSignOut slot="column2" />
+    </ContentWrapper>
+  </Section>
+  <!-- submissions -->
+  <Section paddingTop="small" render={!!admin}>
+    <AdminSubmissions realtimeUrl={NEON_REALTIME_URL} />
+  </Section>
+</Layout>

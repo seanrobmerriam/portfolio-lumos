@@ -1,0 +1,29 @@
+07:51:47 [@astrojs/node] Server listening on http://localhost:4391
+07:51:49 [ERROR] EnvInvalidVariables: The following environment variables defined in `env.schema` are invalid:
+
+- NEON_AUTH_BASE_URL is missing
+
+    at createInvalidVariablesError (file:///home/sean/workspace/lumos-skills/dist/server/chunks/runtime_CmPhDOj_.mjs:119:9)
+    at _internalGetSecret (file:///home/sean/workspace/lumos-skills/dist/server/chunks/auth_DZkMKq8q.mjs:50:8)
+    at file:///home/sean/workspace/lumos-skills/dist/server/chunks/auth_DZkMKq8q.mjs:59:26
+    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)
+    at async node:internal/modules/esm/loader:650:26
+    at async getModuleForRoute (file:///home/sean/workspace/lumos-skills/dist/server/chunks/sequence_OCC0xILv.mjs:3814:10)
+    at async Object.getComponentByRoute (file:///home/sean/workspace/lumos-skills/dist/server/chunks/sequence_OCC0xILv.mjs:3819:10)
+    at async FetchState.getProps (file:///home/sean/workspace/lumos-skills/dist/server/entry.mjs:3617:15)
+    at async handleMiddleware (file:///home/sean/workspace/lumos-skills/dist/server/entry.mjs:2711:2)
+    at async render (file:///home/sean/workspace/lumos-skills/dist/server/entry.mjs:4264:15)
+07:51:50 [ERROR] EnvInvalidVariables: The following environment variables defined in `env.schema` are invalid:
+
+- NEON_AUTH_BASE_URL is missing
+
+    at createInvalidVariablesError (file:///home/sean/workspace/lumos-skills/dist/server/chunks/runtime_CmPhDOj_.mjs:119:9)
+    at _internalGetSecret (file:///home/sean/workspace/lumos-skills/dist/server/chunks/auth_DZkMKq8q.mjs:50:8)
+    at file:///home/sean/workspace/lumos-skills/dist/server/chunks/auth_DZkMKq8q.mjs:59:26
+    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)
+    at async node:internal/modules/esm/loader:650:26
+    at async getModuleForRoute (file:///home/sean/workspace/lumos-skills/dist/server/chunks/sequence_OCC0xILv.mjs:3814:10)
+    at async Object.getComponentByRoute (file:///home/sean/workspace/lumos-skills/dist/server/chunks/sequence_OCC0xILv.mjs:3819:10)
+    at async FetchState.getProps (file:///home/sean/workspace/lumos-skills/dist/server/entry.mjs:3617:15)
+    at async handleMiddleware (file:///home/sean/workspace/lumos-skills/dist/server/entry.mjs:2711:2)
+    at async render (file:///home/sean/workspace/lumos-skills/dist/server/entry.mjs:4264:15)
