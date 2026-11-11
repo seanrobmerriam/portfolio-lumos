@@ -1,0 +1,64 @@
+---
+title: "Statistical Gating vs Fixed Thresholds: Why Your LLM Eval Pipeline Is Flaky"
+description: "Fixed score thresholds in LLM CI pipelines produce false failures because model outputs are stochastic. Statistical gating fixes the flakiness without hiding real regressions."
+publishDate: 2025-08-05
+tags:
+  - "llm-evaluation"
+  - "ci-cd"
+  - "testing"
+draft: false
+---
+
+## Introduction
+
+If your LLM eval suite fails intermittently on commits that didn't touch the prompt or the model, the problem usually isn't your prompt or your model. It's your gating logic. Most teams port a testing mental model — "score must be at least X" — straight from deterministic software into a domain where outputs are stochastic by construction, and then spend months debugging "flaky tests" that are behaving exactly as their statistics predict.
+
+## Why fixed thresholds fail here
+
+A fixed threshold assumes that a given input, run through unchanged code, produces the same output every time — true for a unit test, false for an LLM call at any non-zero temperature. Two runs of the identical prompt against the identical model can land on either side of a threshold purely from sampling variance, with no underlying quality change at all.
+
+This means a fixed threshold produces two kinds of wrong answers, and you can't tell which one you're looking at just from a single failed run:
+
+- **False failure**: the model is fine, the threshold was tripped by ordinary sampling noise
+- **True failure**: the change genuinely made outputs worse, and the threshold correctly caught it
+
+If your only tool is "did the score clear the bar," you can't distinguish these, and teams predictably respond by loosening thresholds until the noise stops — which quietly disables the check for real regressions too.
+
+## What statistical gating does instead
+
+Instead of asking "did this run's score clear a fixed bar," statistical gating asks "is this change's score distribution meaningfully worse than the baseline's distribution, given the noise we know exists." Concretely:
+
+1. Run the eval suite N times (not once) against both the current production baseline and the proposed change, using the same inputs
+2. Compute the score distributions for each
+3. Run a statistical test (we use a paired bootstrap) to estimate whether the observed difference exceeds what sampling noise alone would produce
+4. Gate on the confidence interval, not the raw score
+
+```python
+def is_regression(baseline_scores, candidate_scores, confidence=0.95, n_bootstrap=2000):
+    observed_diff = np.mean(candidate_scores) - np.mean(baseline_scores)
+    diffs = []
+    combined = np.concatenate([baseline_scores, candidate_scores])
+    n = len(baseline_scores)
+
+    for _ in range(n_bootstrap):
+        resampled = np.random.choice(combined, size=len(combined), replace=True)
+        diffs.append(np.mean(resampled[:n]) - np.mean(resampled[n:]))
+
+    lower_bound = np.percentile(diffs, (1 - confidence) * 100 / 2)
+    # Regression only if the entire confidence interval is below zero
+    return observed_diff < 0 and lower_bound < 0 and observed_diff < lower_bound
+```
+
+The gate now fails only when the score drop is large enough to be distinguishable from noise — not whenever a single unlucky sample happens to land under an arbitrary number.
+
+## What this actually bought us
+
+Before switching, our CI eval suite failed on roughly 1 in 6 merges with no code or prompt change involved — pure sampling noise crossing a fixed line. Engineers learned to just re-run CI and move on, which is the worst possible outcome: a safety mechanism that trains people to ignore it.
+
+After switching to statistical gating with N=8 runs per candidate and a 95% confidence requirement, noise-driven false failures dropped to roughly 1 in 60 merges, and — this is the part that matters — we caught two real regressions in that period that the old fixed-threshold gate had been missing, because a single unlucky good run had previously been enough to pass a change that was actually worse on average.
+
+## The cost, honestly stated
+
+Running N samples per eval instead of one multiplies your judge-model cost and CI runtime by N. We settled on N=8 as the point where confidence intervals stopped meaningfully tightening for our score distributions — going to N=16 barely moved the bound but doubled the bill. That number is corpus-specific; measure your own variance before picking N, rather than copying a number from a blog post.
+
+The deeper point generalizes past LLM evals: any test harness measuring a stochastic system needs statistics, not a single sample and a line in the sand. Fixed thresholds are a category error, not a tuning problem.

@@ -1,0 +1,72 @@
+---
+title: "Why I Run axum and tonic on Two Different Ports Instead of One"
+description: "Multiplexing gRPC and HTTP on a single port in Rust is possible but fragile. Here's why I chose split ports for a production message broker instead."
+publishDate: 2025-06-25
+tags:
+  - "rust"
+  - "grpc"
+  - "web-services"
+draft: false
+---
+
+## Introduction
+
+There's a reasonably well-known trick for running axum (HTTP) and tonic (gRPC) on a single port in Rust, using content-type sniffing or ALPN negotiation to route incoming connections to the right handler. I evaluated it for Postbox and deliberately didn't use it. Two ports, two listeners, no shared multiplexing layer. This is the reasoning, including where the single-port approach is actually the better call.
+
+## What the single-port approach actually requires
+
+Multiplexing gRPC and regular HTTP on one port works because gRPC is, under the hood, HTTP/2 with a specific content-type (`application/grpc`) and framing convention. A multiplexer inspects the incoming request — usually the ALPN-negotiated protocol or the `content-type` header on the first request — and routes accordingly:
+
+```rust
+// The single-port approach — works, with caveats
+let service = tower::steer::Steer::new(
+    vec![grpc_service, http_service],
+    |req: &Request<Body>, _services: &[_]| {
+        if req.headers().get("content-type")
+            .map(|v| v.as_bytes().starts_with(b"application/grpc"))
+            .unwrap_or(false)
+        {
+            0 // route to gRPC service
+        } else {
+            1 // route to HTTP service
+        }
+    },
+);
+```
+
+This works, and for a lot of services it's the right trade — one port to expose, one TLS certificate, one thing for a load balancer to point at. It's a real technique, not a hack, and several production systems run this way successfully.
+
+## Where it got fragile for this specific service
+
+Two things about Postbox's actual deployment made the single-port approach cost more than it saved.
+
+**Different failure isolation requirements.** The gRPC surface is the primary path agents use for mailbox operations under load; the HTTP surface is mostly used for lower-volume operational tasks — health checks, admin queries, metrics scraping. With a shared listener, a connection-handling issue on one protocol's path (a slow client holding a connection open, a misbehaving proxy) has more opportunity to affect the other, because they share the same accept loop and the same `tower::Steer` dispatch layer. Splitting the ports meant a problem on the HTTP admin surface literally cannot back up the gRPC accept loop, because they don't share one.
+
+**Debuggability under the load-testing tool I actually had.** Most HTTP load-testing and observability tooling assumes a port speaks one protocol. Pointing a standard HTTP debugging proxy at a multiplexed port to inspect admin traffic meant either teaching it to route around the gRPC frames or fighting tooling that assumed a single protocol per port. This is a mundane, unglamorous reason, but it was the one that actually tipped the decision — the multiplexed setup worked, but every time I needed to debug something under load, the port-sharing was friction I paid for repeatedly.
+
+## What split ports actually cost
+
+Being honest about the trade the other direction: two ports means two things to expose through any firewall or ingress configuration, and if you're running behind a single load balancer that only forwards one port cleanly, split ports is real added operational surface. For Postbox specifically, self-hosted and typically run on a private network rather than behind a shared public load balancer, that cost was close to zero. It would not be close to zero for every deployment shape, which is exactly why I'd make the multiplexed choice again for a different service with a different operational profile.
+
+```rust
+// The split-port setup — simpler in isolation, more surface area overall
+async fn run() -> Result<()> {
+    let grpc = tonic::transport::Server::builder()
+        .add_service(MailboxServiceServer::new(mailbox_impl.clone()));
+
+    let http = axum::Router::new()
+        .route("/health", get(health_check))
+        .route("/admin/mailboxes", get(list_mailboxes))
+        .with_state(mailbox_impl);
+
+    tokio::try_join!(
+        grpc.serve("0.0.0.0:50051".parse()?),
+        axum::serve(TcpListener::bind("0.0.0.0:8080").await?, http),
+    )?;
+    Ok(())
+}
+```
+
+## The actual decision rule
+
+Multiplex gRPC and HTTP on one port when your deployment target genuinely benefits from a single exposed port — a shared public load balancer with per-port ingress cost, or a client environment where opening a second port is a real operational ask. Split them when the two surfaces have meaningfully different traffic profiles or failure-isolation needs and your deployment target doesn't punish you for a second listener. The Rust ecosystem gives you a clean way to do either; the mistake is picking based on which one feels more sophisticated rather than which one matches your actual deployment constraints.

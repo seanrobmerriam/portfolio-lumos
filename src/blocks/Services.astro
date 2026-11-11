@@ -1,0 +1,71 @@
+---
+import NoteHandwritten from "@/components/content/NoteHandwritten.astro";
+import Section from "@/components/wrapper/Section.astro";
+import Heading from "@/components/typography/Heading.astro";
+import Paragraph from "@/components/typography/Paragraph.astro";
+import Grid from "@/components/wrapper/Grid.astro";
+import Card from "@/components/item/Card.astro";
+import IconCopyright from "@tabler/icons/outline/copyright.svg";
+import IconLayoutDashboard from "@tabler/icons/outline/layout-dashboard.svg";
+import IconGitPullRequestLockedAi from "@tabler/icons/outline/git-pull-request-locked-ai.svg";
+import IconDatabase from "@tabler/icons/outline/database.svg";
+import IconAiAgents from "@tabler/icons/outline/ai-agents.svg";
+import IconBrandWordpress from "@tabler/icons/outline/brand-wordpress.svg";
+import ContentWrapper from "@/components/wrapper/ContentWrapper.astro";
+const sectionLabelClass =
+  "drop-shadow-text background-yellow angled-text-right-1 emphasis font-quicksand padding-inline-2 padding-block-3 margin-top-3 text-wrap-nowrap";
+
+const services = [
+  {
+    heading: "Site migrations",
+    text: "Move from Webflow, WordPress or another platform to Astro, with a plan for your content, redirects and editing needs.",
+    icon: IconBrandWordpress,
+    headingTag: "h3" as const,
+  },
+  {
+    heading: "Web Design",
+    text: "Give your content a clear structure and a distinctive look, with layouts that work from a phone to a wide screen.",
+    icon: IconLayoutDashboard,
+  },
+  {
+    heading: "Development",
+    text: "Build your site with Astro, reusable components and plain CSS, with attention to speed, accessibility and future updates.",
+    icon: IconGitPullRequestLockedAi,
+  },
+  {
+    heading: "AI Integrations",
+    text: "Add AI where it serves a clear purpose, from helping people find information to reducing repetitive work.",
+    icon: IconDatabase,
+  },
+  {
+    heading: "Agent workflows",
+    text: "Set up coding agents with project instructions and checks that help them contribute to your existing development workflow.",
+    icon: IconAiAgents,
+  },
+  {
+    heading: "Brand Systems",
+    text: "Turn your visual identity into practical rules for type, color and components that your team can use across the site.",
+    icon: IconCopyright,
+  },
+];
+---
+
+  <Section id="services" fullHeight={true} gap="8">
+    <ContentWrapper variant="columns">
+    <Heading tag="h2" class={sectionLabelClass}>
+      where I can help
+    </Heading>
+    <Paragraph variant="h4" class="font-figtree">
+      From a new visual direction to the systems that keep your site running.
+    </Paragraph>
+    <div slot="column2">
+    <NoteHandwritten text="Your content comes with you. So does a plan for publishing it." class="margin-block-4" />
+    <NoteHandwritten variant="paper" text="Migrations: usually $1,500–$5,000. Scope and price agreed before we start." />
+    </div>
+    <Grid variant="autofit" minColumnWidth={16} maxColumnCount={4}>
+      {services.map((service) => (
+        <Card {...service} />
+      ))}
+    </Grid>
+    </ContentWrapper>   
+  </Section>

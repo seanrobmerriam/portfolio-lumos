@@ -1,0 +1,38 @@
+---
+title: "The Strangler Fig Pattern Is Not a Migration Strategy — It's a Risk Management Tool"
+description: "The strangler fig pattern is usually explained as a migration technique. That framing misses the point, and it's why so many strangler migrations still go badly."
+publishDate: 2026-01-19
+tags:
+  - "architecture"
+  - "migrations"
+  - "risk-management"
+draft: false
+---
+
+## Introduction
+
+Every article about the strangler fig pattern explains it the same way: route a slice of traffic to the new system, expand the slice over time, eventually the old system has no traffic left and you delete it. That's an accurate description of the mechanics. It's also a description that has led a lot of teams to run a technically correct strangler migration that still failed, because the mechanics were never the point.
+
+## What the pattern is actually for
+
+The strangler fig pattern exists to answer one question: **how do you find out your new system is wrong before it's carrying all your traffic, instead of after?** The incremental traffic-shifting isn't the goal — it's the instrument for getting continuous, cheap answers to that question. If you're not using each stage of the migration to actually learn something and act on it, you're doing the traffic-shifting part without the risk-management part, and you've kept the slowest part of the pattern while dropping the reason it's worth being slow.
+
+## The version that goes wrong
+
+I've seen this failure mode twice now, in different codebases, with the same shape both times. A team adopts strangler fig migration, sets up a traffic-shifting mechanism, and defines a fixed schedule: 5% in week one, 25% in week two, 100% by week six. The schedule is the plan. Nobody revisits it based on what the early stages actually show, because the plan already has dates on it and the dates are what got put in the project tracker.
+
+At 5%, error rates on the new system were 3x higher than the old one — small enough in absolute terms not to trip alerts, easy to attribute to "early migration noise." Nobody stopped to ask why. By 25%, the same ratio held, but now it was a real number of affected customers, and it took another two weeks to trace the elevated error rate to a timezone-handling bug that had been visible in the data since the very first 5% stage. The schedule had been followed. The point of the schedule — an early, cheap, low-blast-radius signal — had been generated and ignored.
+
+## What the pattern actually requires from you
+
+Each stage of a strangler migration needs three things to do the job it's meant for, not just the traffic split:
+
+**A pre-defined comparison, not just a health check.** "Is the new system up" is not the question. "Is the new system producing the same results as the old system, for the same inputs, at this traffic level" is the question. That requires running both systems side by side on real (or shadowed) traffic and diffing outputs, not just watching that the new system doesn't crash.
+
+**A rule for what happens when the comparison finds something.** Decide in advance what counts as a stop-ship signal at each stage, before you're in the room making that call under the pressure of a deadline that's already been communicated upward. "We'll know it if we see it" is not a rule; it's a way of guaranteeing you'll rationalize continuing.
+
+**Actual willingness to pause or reverse the traffic split.** This is the one that's culturally hardest. A migration with dates on a roadmap creates real pressure to keep the percentage moving up and to the right regardless of what stage N is showing you. If your organization won't tolerate pausing at 25% for two weeks to fix something the data surfaced, you don't actually have a risk-management tool — you have a traffic-shifting mechanism with a deadline, wearing the strangler fig pattern's name.
+
+## The reframe that actually helps
+
+Stop asking "what percentage should we be at by which week." Ask instead: "what would we need to see at this stage to be confident about moving to the next one, and what would make us stop." If you can't answer that question for your current stage, you're not ready to move to the next one — regardless of what the calendar says. The traffic percentage is the least important number in the whole migration. The comparison data at each stage is the entire reason the pattern exists.

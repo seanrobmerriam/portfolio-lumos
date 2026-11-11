@@ -1,0 +1,16 @@
+---
+import Layout from "@/layouts/BaseLayout.astro";
+import Blog from "@/blocks/Blog.astro";
+import { getPublishedPosts, postCard } from "@/utils/blog";
+
+export async function getStaticPaths() {
+  const posts = await getPublishedPosts();
+  return [...new Set(posts.map((post) => post.data.author))].map((author) => ({
+    params: { author: author.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") },
+    props: { author, posts: posts.filter((post) => post.data.author === author).map(postCard) },
+  }));
+}
+interface Props { author: string; posts: ReturnType<typeof postCard>[]; }
+const { author, posts } = Astro.props;
+---
+<Layout title={`Articles by ${author}`}><Blog posts={posts} /></Layout>

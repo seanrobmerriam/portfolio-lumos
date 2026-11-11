@@ -1,0 +1,86 @@
+---
+title: "Server-Side Rendering a Go/WASM App: What Actually Has to Run Twice"
+description: "SSR for a Go/WASM frontend sounds like it doubles your rendering work. In practice, only a small, specific slice of the code needs to run in both places."
+publishDate: 2025-08-27
+tags:
+  - "go"
+  - "webassembly"
+  - "server-side-rendering"
+draft: false
+---
+
+## Introduction
+
+The pitch for server-side rendering a Go/WASM component tree is straightforward: render the initial HTML on the server for fast first paint, then hydrate the same components client-side for interactivity. The part that's easy to get wrong is assuming "the same components run on both sides" means "everything runs twice." In building gowasm's SSR support, most of a typical component tree turned out to need exactly one rendering path shared between both environments — and a small, specific slice needed to be genuinely different, on purpose.
+
+## What's actually shared between server and client
+
+The render function itself — turning a component's state into a tree of elements — is pure, environment-agnostic logic, and this is the part that should run identically whether the output target is a string builder (server) or the live DOM (client):
+
+```go
+type RenderTarget interface {
+	CreateElement(tag string) NodeHandle
+	SetAttribute(node NodeHandle, key, value string)
+	AppendChild(parent, child NodeHandle)
+}
+
+func (c *Counter) Render(target RenderTarget) NodeHandle {
+	button := target.CreateElement("button")
+	target.SetAttribute(button, "class", "counter-btn")
+	target.AppendChild(button, renderText(target, fmt.Sprintf("Count: %d", c.count)))
+	return button
+}
+```
+
+`Counter.Render` doesn't know or care whether `target` is writing to a string buffer or manipulating real DOM nodes through `js.Value`. That's exactly the point — component authors write this once, and it's correct in both environments by construction, not by discipline.
+
+## What genuinely has to differ
+
+Two things can't be shared, and pretending otherwise is where naive SSR implementations get into trouble.
+
+**The `RenderTarget` implementation itself**, obviously — a server-side target builds a string:
+
+```go
+type StringTarget struct {
+	buf strings.Builder
+}
+
+func (s *StringTarget) CreateElement(tag string) NodeHandle {
+	s.buf.WriteString("<" + tag)
+	return NodeHandle(s.buf.Len()) // position marker, not a real handle
+}
+```
+
+while a client-side target calls real DOM APIs through `js.Value`. This difference is expected and, honestly, the easy part — it's exactly what the `RenderTarget` interface exists to abstract over.
+
+**Anything touching browser-only APIs inside a component's lifecycle.** This is the part that actually caused bugs early on. A component reading `window.localStorage`, checking `document.visibilityState`, or scheduling a `requestAnimationFrame` callback has no equivalent on the server — there is no `window` object in a server-side Go process. The first version of gowasm's SSR support didn't guard against this, and a component that read `localStorage` in its constructor crashed the server-side render outright, because `js.Global()` calls against a real browser global object simply don't exist server-side.
+
+```go
+type BrowserAPI interface {
+	LocalStorageGet(key string) (string, bool)
+}
+
+// Server-side: returns zero values, never touches a real browser global
+type noopBrowserAPI struct{}
+func (noopBrowserAPI) LocalStorageGet(key string) (string, bool) { return "", false }
+
+// Client-side: wraps js.Global().Get("localStorage")
+type wasmBrowserAPI struct{}
+func (wasmBrowserAPI) LocalStorageGet(key string) (string, bool) {
+	val := js.Global().Get("localStorage").Call("getItem", key)
+	if val.IsNull() {
+		return "", false
+	}
+	return val.String(), true
+}
+```
+
+Once components accessed browser APIs only through an injected `BrowserAPI` interface, rather than reaching for `js.Global()` directly, the server-side render path had a safe no-op to fall back to instead of crashing on a global object that was never going to exist.
+
+## Where hydration mismatches actually came from
+
+The other recurring bug class was subtler: a component whose render output depended on something that differs between server and client by nature — the current timestamp, a random ID, viewport width — produces genuinely different markup in each environment, and hydration (attaching client-side behavior to server-rendered markup) fails when the client's expected tree doesn't match what the server actually sent. The fix wasn't clever reconciliation; it was a lint-style convention: anything non-deterministic gets computed once, server-side, and passed down as an explicit prop rather than recomputed independently on the client.
+
+## The generalizable lesson
+
+"Shared rendering logic" for SSR doesn't mean "identical execution environment." It means isolating the actual environment-dependent seams — browser-only APIs, non-deterministic values — behind explicit interfaces, so the 95% of component logic that's genuinely pure can be trusted to behave identically everywhere, and the 5% that can't be shared is deliberate and visible in the code, not an accident waiting to crash a server-side render the first time someone reaches for `window` out of habit.

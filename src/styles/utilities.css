@@ -401,7 +401,6 @@
 .margin-top-3 {
   margin-top: var(--space-3);
 }
-        class="margin-top-8 font-ranchers flex-grow letter-spacing-1"
 
 .margin-top-4 {
   margin-top: var(--space-4);
@@ -1227,4 +1226,308 @@ span:is(
 
 .radius-none {
   border-radius: 0;
+}
+
+.font-ranchers {
+  font-family: "Ranchers";
+}
+
+.font-manjari {
+  font-family: "Manjari";
+}
+
+.font-bayon {
+  font-family: "Bayon";
+}
+
+.font-barriecito {
+  font-family: "Barriecito";
+}
+
+.font-allerta-stencil {
+  font-family: "Allerta Stencil";
+}
+
+.font-boogaloo {
+  font-family: "Boogaloo";
+}
+
+.font-delicious-handrawn {
+  font-family: "Delicious Handrawn";
+}
+
+.font-thasadith {
+  font-family: "Thasadith";
+}
+
+.font-delius-unicase {
+  font-family: "Delius Unicase";
+}
+
+.font-m-plus-1 {
+  font-family: "M PLUS 1 Variable";
+}
+
+.font-reddit-sans {
+  font-family: "Reddit Sans Variable";
+}
+
+.font-bowlby-one-sc {
+  font-family: "Bowlby One SC";
+}
+
+.font-lilita-one {
+  font-family: "Lilita One";
+}
+
+.font-alfa-slab-one {
+  font-family: "Alfa Slab One";
+}
+
+.font-architects-daughter {
+  font-family: "Architects Daughter";
+}
+
+.font-grandstander {
+  font-family: "Grandstander Variable";
+}
+
+.font-acme {
+  font-family: "Acme";
+}
+
+.font-luckiest-guy {
+  font-family: "Luckiest Guy";
+}
+
+.font-dosis {
+  font-family: "Dosis Variable";
+}
+
+.font-fredoka {
+  font-family: "Fredoka Variable";
+}
+
+.font-urbanist {
+  font-family: "Urbanist Variable";
+}
+
+.font-outfit {
+  font-family: "Outfit Variable";
+}
+
+.font-momo-trust-display {
+  font-family: "Momo Trust Display";
+}
+
+.font-stack-sans-notch {
+  font-family: "Stack Sans Notch Variable";
+}
+
+.font-averia-libre {
+  font-family: "Averia Libre";
+}
+
+.font-indie-flower {
+  font-family: "Indie Flower";
+}
+
+.font-zen-maru-gothic {
+  font-family: "Zen Maru Gothic";
+}
+
+.font-red-hat-display {
+  font-family: "Red Hat Display Variable";
+}
+
+.font-bangers {
+  font-family: "Bangers";
+}
+
+.font-figtree {
+  font-family: "Figtree Variable";
+}
+
+
+
+.hero-display {
+  color: var(--color-black);
+  letter-spacing: 0.0001em;
+}
+
+.hero-emphasis {
+  margin-inline: 0.1em;
+  margin-top: 0.1em;
+  padding-inline: 0.1em;
+  padding-block: 0.05em;
+}
+
+.text-color-blue {
+  color: var(--color-blue);
+}
+
+.text-color-green {
+  color: var(--color-green);
+}
+
+.text-color-red {
+  color: var(--color-red);
+}
+
+.text-color-yellow {
+  color: var(--color-yellow);
+}
+
+.text-color-purple {
+  color: var(--color-purple);
+}
+
+.text-color-orange {
+  color: var(--color-orange);
+}
+
+.text-color-pink {
+  color: var(--color-pink);
+}
+
+.text-color-brown {
+  color: var(--color-brown);
+}
+
+.text-color-gray {
+  color: var(--color-gray);
+}
+
+.text-color-black {
+  color: var(--color-black);
+}
+
+.text-color-white {
+  color: var(--color-white);
+}
+
+.background-blue {
+  background-color: var(--color-blue);
+}
+
+.background-dark-blue {
+  background-color: var(--color-dark-blue);
+}
+
+.background-green {
+  background-color: var(--color-green);
+}
+
+.background-dark-green {
+  background-color: var(--color-dark-green);
+}
+
+.background-red {
+  background-color: var(--color-red);
+}
+
+.background-dark-red {
+  background-color: var(--color-dark-red);
+}
+
+.background-yellow {
+  background-color: var(--color-yellow);
+}
+
+.background-dark-yellow {
+  background-color: var(--color-dark-yellow);
+}
+
+.background-purple {
+  background-color: var(--color-purple);
+}
+
+.background-dark-purple {
+  background-color: var(--color-dark-purple);
+}
+
+
+.background-orange {
+  background-color: var(--color-orange);
+}
+
+.background-dark-orange {
+  background-color: var(--color-dark-orange);
+}
+
+.background-pink {
+  background-color: var(--color-pink);
+}
+
+.background-dark-pink {
+  background-color: var(--color-dark-pink);
+}
+
+.background-brown {
+  background-color: var(--color-brown);
+}
+
+.background-gray {
+  background-color: var(--color-gray);
+}
+
+.background-black {
+  background-color: var(--color-black);
+}
+
+.background-white {
+  background-color: var(--color-white);
+}
+.text-underline-red {
+  text-decoration: underline;
+  text-decoration-line: underline;
+  text-decoration-color: var(--color-red);
+}
+
+.text-underline-blue {
+  text-decoration: underline;
+  text-decoration-line: underline;
+  text-decoration-color: var(--color-blue);
+}
+
+.text-underline-yellow {
+  text-decoration: underline;
+  text-decoration-line: underline;
+  text-decoration-color: var(--color-yellow);
+}
+
+.text-underline-green {
+  text-decoration: underline;
+  text-decoration-line: underline;
+  text-decoration-color: var(--color-green);
+}
+
+.text-underline-orange {
+  text-decoration: underline;
+  text-decoration-line: underline;
+  text-decoration-color: var(--color-orange);
+}
+.text-underline-purple {
+  text-decoration: underline;
+  text-decoration-line: underline;
+  text-decoration-color: var(--color-purple);
+}
+
+.text-underline-white {
+  text-decoration: underline;
+  text-decoration-line: underline;
+  text-decoration-color: var(--color-white);
+}
+
+.border-2 {
+  border-width: 2px;
+  border-style: solid;
+}
+
+.font-quicksand {
+  font-family: "Quicksand Variable", sans-serif;
+}
+
+.drop-shadow-text {
+  text-shadow: 0.125rem 0.125rem 0.25rem rgb(0 0 0 / 0.5);
 }

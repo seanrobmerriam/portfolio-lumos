@@ -1,0 +1,89 @@
+---
+title: "Modeling Lease Expiry as a State Machine, Not a Timer"
+description: "Treating message lease expiry as a background timer led to subtle bugs. Rebuilding it as an explicit state machine in Rust fixed an entire class of them."
+publishDate: 2025-05-02
+tags:
+  - "rust"
+  - "concurrency"
+  - "state-machines"
+draft: false
+---
+
+## Introduction
+
+The first version of lease expiry in Postbox — the mechanism that reclaims a message when a consumer claims it but never acknowledges completion — was a `tokio::time::sleep` racing against an acknowledgment channel. It worked in every test I wrote and produced a genuinely confusing double-processing bug in the one scenario I hadn't thought to test: a consumer acknowledging *just* as the lease was expiring. The fix wasn't a smarter timer. It was recognizing that a lease has more states than "held" and "expired," and a `sleep()` race can't represent that.
+
+## Why the timer-race version was wrong
+
+The original implementation looked reasonable:
+
+```rust
+// The version that had a bug
+async fn process_with_lease(msg: Message, lease_duration: Duration) -> Result<()> {
+    tokio::select! {
+        result = handle_message(&msg) => result,
+        _ = tokio::time::sleep(lease_duration) => {
+            requeue(&msg).await
+        }
+    }
+}
+```
+
+`tokio::select!` races the two futures and takes whichever completes first — which sounds exactly like what a lease expiry should do. The bug is in what happens when `handle_message` finishes at nearly the same instant the sleep fires: `select!` picks one branch, but the *other* branch's work doesn't stop being real. If the sleep branch wins by a few microseconds, the message gets requeued — and then the consumer's now-orphaned `handle_message` call finishes a moment later and commits its result anyway, because nothing told it the lease had already been reclaimed.
+
+The race wasn't a timing bug I could fix by tuning a duration. It was a structural gap: the code had no representation for "the lease expired, but the consumer's work is still in flight and about to try to commit." That state existed in reality. It just didn't exist in the code.
+
+## Modeling it as an explicit state machine
+
+The fix was giving that in-between state a name, using an enum with an explicit transition function instead of a race between two independent futures:
+
+```rust
+#[derive(Debug, Clone, PartialEq)]
+enum LeaseState {
+    Held { expires_at: Instant },
+    ExpiringSoon { expires_at: Instant },   // the state the race was missing
+    Expired,
+    Committed,
+}
+
+struct Lease {
+    state: LeaseState,
+    checkpoint_token: Uuid,
+}
+
+impl Lease {
+    fn on_expiry_tick(&mut self, now: Instant) {
+        self.state = match &self.state {
+            LeaseState::Held { expires_at } if now >= *expires_at => LeaseState::Expired,
+            LeaseState::Held { expires_at } if *expires_at - now < GRACE_WINDOW => {
+                LeaseState::ExpiringSoon { expires_at: *expires_at }
+            }
+            other => other.clone(),
+        };
+    }
+
+    /// Returns whether the commit is actually allowed to proceed.
+    fn try_commit(&mut self, token: Uuid) -> bool {
+        if token != self.checkpoint_token {
+            return false;
+        }
+        match self.state {
+            LeaseState::Held { .. } | LeaseState::ExpiringSoon { .. } => {
+                self.state = LeaseState::Committed;
+                true
+            }
+            LeaseState::Expired | LeaseState::Committed => false,
+        }
+    }
+}
+```
+
+The key change is `try_commit`: a consumer finishing its work doesn't get to unconditionally commit just because it finished. It has to present its `checkpoint_token` and the lease has to still be in a commit-eligible state. Once a lease transitions to `Expired`, `try_commit` returns `false` regardless of how far along the original consumer's work was — there's no window where both a requeue and a late commit can both succeed, because commit eligibility is now a checked precondition instead of an assumption baked into `select!`'s race outcome.
+
+## What changed once it was explicit
+
+The `ExpiringSoon` state turned out to matter for a second reason I hadn't anticipated: it gave the system a hook for logging near-miss leases — cases where a consumer finished with only milliseconds of lease time remaining — which surfaced that a specific downstream call was routinely eating most of the lease window under load, well before it started actually timing out and causing requeue storms.
+
+## The generalizable lesson
+
+`tokio::select!` (and its equivalent in any async runtime) is precise about which future's result you get — it is not, by itself, precise about which future's *side effects* are still happening in the background after the other branch wins. Any time a race's losing branch has already started doing something with external consequences — writing to a database, calling an API, mutating shared state — that "how the race resolves" question needs an explicit state representation and a guarded transition, not an implicit assumption that losing a race means the loser's effects didn't happen.

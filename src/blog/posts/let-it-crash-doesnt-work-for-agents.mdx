@@ -1,0 +1,64 @@
+---
+title: "Why 'Let It Crash' Doesn't Work for AI Agents (and What Does)"
+description: "Erlang's fault-tolerance philosophy inspired modern agent frameworks, but LLM failures break its core assumption. Here's the pattern that actually works."
+publishDate: 2025-02-10
+tags:
+  - "erlang"
+  - "agent-driven-development"
+  - "fault-tolerance"
+draft: false
+---
+
+## Introduction
+
+"Let it crash" is one of the most quoted ideas in distributed systems, and for good reason. Joe Armstrong's insight — that trying to anticipate every failure mode is a losing game, so you should instead design for cheap, fast recovery — has held up for three decades of telecom switches, chat servers, and payment systems.
+
+It's also become a popular mental model for AI agent frameworks. Wrap every agent in a supervisor, restart it on failure, move on. I built systems this way for the better part of a year before I understood why it kept quietly failing me in ways Erlang never did.
+
+## The assumption "let it crash" depends on
+
+Let it crash works because of one property that's easy to take for granted: **a crashed Erlang process fails loudly and immediately**. A pattern match fails, an unhandled message arrives, a `badarg` is raised — the process dies on the spot, the supervisor sees the exit signal, and a fresh process starts with known-good initial state. The failure is binary. It happened, or it didn't.
+
+LLM-driven agents don't fail this way. An agent doesn't crash when it gets something wrong — it keeps running, produces plausible-looking output, and reports success. The failure is silent, gradual, and often only visible several steps downstream. Restarting a hallucinating agent doesn't fix anything, because the process didn't die; it's still alive, still confident, and about to make the same category of mistake again.
+
+This is the mismatch. Supervision trees assume failure announces itself. Agent failures usually don't.
+
+## Where this bit us
+
+We had a documentation agent summarizing pull requests before routing them to reviewers. Under our supervisor, a timeout or a malformed tool call triggered a clean OTP-style restart. What it didn't catch: the agent occasionally summarized a PR's intent backward — describing what the code *used to do* instead of what it now did — and returned that summary with total confidence, well-formed and on time.
+
+No exception. No restart. No supervisor event. Just a wrong artifact silently accepted downstream, three separate times before someone caught it in review by coincidence.
+
+## What actually worked
+
+We stopped treating "did the process complete" as the signal that mattered, and started treating **verification as a first-class step in every agent's lifecycle**, not an optional add-on.
+
+Concretely, that meant three changes:
+
+### 1. Every agent output gets a cheap, independent check
+
+Not a second LLM call asking "does this look right?" — that just moves the hallucination risk one level up. Instead, structural checks that don't require judgment: does the summary reference file paths that actually exist in the diff? Does the referenced function name appear in the changed code? These checks are boring, mechanical, and exactly the kind of thing that catches confident nonsense.
+
+```erlang
+verify_summary(Summary, Diff) ->
+    ReferencedFiles = extract_file_mentions(Summary),
+    ActualFiles = diff_file_paths(Diff),
+    case lists:all(fun(F) -> lists:member(F, ActualFiles) end, ReferencedFiles) of
+        true  -> {ok, Summary};
+        false -> {reject, unverifiable_file_references}
+    end.
+```
+
+### 2. Supervisors restart on verification failure, not just process death
+
+The supervision tree didn't change conceptually — it's still `one_for_one`, still restarting on a defined failure signal. What changed is what counts as a failure signal. A verification rejection now raises the same kind of exit the supervisor already knew how to handle. We didn't need new infrastructure, just a wider definition of "crashed."
+
+### 3. Confidence is never trusted as a proxy for correctness
+
+This was the hardest habit to break on the team. An agent that says "I'm confident this is correct" is reporting its own fluency, not the world's ground truth. We stopped surfacing model self-assessment in any place where a human might read it as a verified result.
+
+## The pattern, generalized
+
+If you're building agent systems on actor-model infrastructure — Erlang, or anything borrowing its ideas — the supervision tree is still the right shape. What needs to change is the failure detector sitting in front of it. Erlang gets failure detection for free from the runtime. Agent systems have to build it, deliberately, as verification logic that's independent of the thing being verified.
+
+"Let it crash" is still correct. You just have to teach your system what a crash looks like when the thing running doesn't know it failed.

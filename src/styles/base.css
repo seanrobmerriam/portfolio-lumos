@@ -22,33 +22,75 @@
 @import "@fontsource/bangers";
 @import "@fontsource-variable/figtree";
 
+@import "@fontsource-variable/comfortaa";
+@import "@fontsource/be-vietnam-pro";
+@import "@fontsource-variable/crimson-pro";
+@import "@fontsource-variable/bitter";
+@import "@fontsource-variable/cairo";
+@import "@fontsource/opendyslexic";
+@import "@fontsource-variable/lexend";
+@import "@fontsource-variable/quicksand";
+@import "@fontsource-variable/baskervville";
+@import "@fontsource/allan";
+@import "@fontsource-variable/sono";
+@import "@fontsource/dseg7-classic";
+@import "@fontsource/londrina-solid";
+@import "@fontsource/hachi-maru-pop";
+
+@import "@fontsource/syncopate";
+@import "@fontsource/monoton";
+@import "@fontsource-variable/honk";
+
+@import "@fontsource/lilita-one";
+@import "@fontsource/dela-gothic-one";
+
+@import "@fontsource-variable/yanone-kaffeesatz";
+
+
+
+
 :root {
   /* Swatches */
-  --light-100: #faecce;
-  --light-200: #e2e2db;
-  --light-300: #a2a2a2;
+  --light-200: #faecce;
+  --light-100: #ffe9ba;
+  --light-300: #ffffff;
   --dark-700: #453e42;
   --dark-800: #2f2b2d;
   --dark-900: #0e0d0d;
-  --brand-500: #fbe150;
+  --brand-500: #fbe150; 
+  --brand-700: #e9d642;
   --brand-blue: #2e8efc;
-  --brand-green: #73fc75;
+  --brand-blue-dark: #1c6ed9;
+  --brand-green: #5ad75c;
+  --brand-green-dark: #3c9e3f;
   --brand-orange: #f7b860;
+  --brand-orange-dark: #e69f3c;
   --brand-pink: #fa6cd2;
+  --brand-pink-dark: #e64ab2;
   --brand-red: #f95151;
+  --brand-red-dark: #e63c3c;
+  --brand-purple: #a56cf7;
+  --brand-purple-dark: #8a4ae6;
   --brand-text: var(--dark-900);
 
   --color-blue: var(--brand-blue);
+  --color-dark-blue: var(--brand-blue-dark);
   --color-green: var(--brand-green);
+  --color-dark-green: var(--brand-green-dark);
   --color-red: var(--brand-red);
+  --color-dark-red: var(--brand-red-dark);
   --color-yellow: var(--brand-500);
+  --color-dark-yellow: var(--brand-700);
   --color-purple: var(--brand-pink);
+  --color-dark-purple: var(--brand-pink-dark);
   --color-orange: var(--brand-orange);
+  --color-dark-orange: var(--brand-orange-dark);
   --color-pink: var(--brand-pink);
+  --color-dark-pink: var(--brand-pink-dark);
   --color-brown: var(--dark-700);
   --color-gray: var(--light-300);
   --color-black: var(--dark-900);
-  --color-white: var(--light-100);
+  --color-white: var(--light-300);
   
   /* Typography primitives */
   --primary-family: var(--font-figtree, system-ui, sans-serif);

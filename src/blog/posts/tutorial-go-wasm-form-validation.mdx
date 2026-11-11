@@ -1,0 +1,155 @@
+---
+title: "Tutorial: Compiling Go to WebAssembly for Client-Side Form Validation"
+description: "Reuse your Go backend validation logic in the browser instead of reimplementing it in JavaScript. A hands-on tutorial compiling Go to WASM with a real form example."
+publishDate: 2025-10-30
+tags:
+  - "go"
+  - "webassembly"
+  - "tutorial"
+draft: false
+---
+
+## Introduction
+
+Every team with a Go backend eventually hits the same small, annoying problem: validation rules get written once in Go, then rewritten in JavaScript for the client, and the two drift apart within a few months. Someone adds a new rule to one and forgets the other. This tutorial compiles the actual Go validation code to WebAssembly and runs it in the browser, so there's exactly one implementation instead of two that are supposed to agree.
+
+## Step 1: Write validation logic with no browser assumptions baked in
+
+Keep the validation package free of anything server-specific — no database calls, no HTTP handling. It just needs to take a value and return a verdict.
+
+```go
+// validate.go
+package validate
+
+import (
+	"regexp"
+	"strings"
+)
+
+var emailPattern = regexp.MustCompile(`^[^\s@]+@[^\s@]+\.[^\s@]+$`)
+
+type Result struct {
+	Valid  bool
+	Errors []string
+}
+
+func Email(input string) Result {
+	input = strings.TrimSpace(input)
+	if input == "" {
+		return Result{Valid: false, Errors: []string{"email is required"}}
+	}
+	if !emailPattern.MatchString(input) {
+		return Result{Valid: false, Errors: []string{"email format is invalid"}}
+	}
+	return Result{Valid: true}
+}
+
+func RoutingNumber(input string) Result {
+	if len(input) != 9 {
+		return Result{Valid: false, Errors: []string{"routing number must be 9 digits"}}
+	}
+	var sum int
+	weights := []int{3, 7, 1, 3, 7, 1, 3, 7, 1}
+	for i, ch := range input {
+		digit := int(ch - '0')
+		if digit < 0 || digit > 9 {
+			return Result{Valid: false, Errors: []string{"routing number must be numeric"}}
+		}
+		sum += digit * weights[i]
+	}
+	if sum%10 != 0 {
+		return Result{Valid: false, Errors: []string{"routing number checksum failed"}}
+	}
+	return Result{Valid: true}
+}
+```
+
+This is the exact same code your server imports to validate a submitted form. Nothing here knows it's about to run in a browser.
+
+## Step 2: Add the WASM entry point
+
+Go exposes functions to JavaScript through `syscall/js`. This file is the only browser-aware code in the whole project:
+
+```go
+// main.go
+//go:build js && wasm
+
+package main
+
+import "syscall/js"
+import "yourmodule/validate"
+
+func validateEmail(this js.Value, args []js.Value) interface{} {
+	result := validate.Email(args[0].String())
+	return resultToJS(result)
+}
+
+func validateRoutingNumber(this js.Value, args []js.Value) interface{} {
+	result := validate.RoutingNumber(args[0].String())
+	return resultToJS(result)
+}
+
+func resultToJS(r validate.Result) map[string]interface{} {
+	errs := make([]interface{}, len(r.Errors))
+	for i, e := range r.Errors {
+		errs[i] = e
+	}
+	return map[string]interface{}{
+		"valid":  r.Valid,
+		"errors": errs,
+	}
+}
+
+func main() {
+	js.Global().Set("validateEmail", js.FuncOf(validateEmail))
+	js.Global().Set("validateRoutingNumber", js.FuncOf(validateRoutingNumber))
+	select {} // keep the program alive; without this, the WASM instance exits immediately
+}
+```
+
+That `select {}` at the end trips up almost everyone the first time. Without it, `main()` returns, the Go runtime shuts down, and every function you registered on `js.Global()` stops working the moment the page finishes loading.
+
+## Step 3: Compile it
+
+```bash
+GOOS=js GOARCH=wasm go build -o validate.wasm main.go
+```
+
+You'll also need Go's WASM support glue file, which ships with your Go installation:
+
+```bash
+cp "$(go env GOROOT)/lib/wasm/wasm_exec.js" ./public/
+```
+
+(In Go versions before 1.24 this file lives at `misc/wasm/wasm_exec.js` instead — check both paths if the copy fails.)
+
+## Step 4: Load it in the browser
+
+```html
+<script src="wasm_exec.js"></script>
+<script>
+  const go = new Go();
+  WebAssembly.instantiateStreaming(fetch("validate.wasm"), go.importObject)
+    .then((result) => {
+      go.run(result.instance);
+      // validateEmail and validateRoutingNumber are now on window
+    });
+</script>
+
+<input id="email" type="text" />
+<span id="email-error"></span>
+
+<script>
+  document.getElementById("email").addEventListener("input", (e) => {
+    const result = validateEmail(e.target.value);
+    document.getElementById("email-error").textContent =
+      result.valid ? "" : result.errors[0];
+  });
+</script>
+```
+
+Typing into the field now runs the exact same Go code your server runs — same regex, same routing-number checksum algorithm, same error strings. Change a rule once, in one file, and both the client and server pick it up on next deploy.
+
+## The trade-off worth knowing before you commit to this
+
+The compiled WASM binary for even a small validation package is typically 2–3 MB before compression, because it bundles the Go runtime alongside your code, not just your code. Gzip brings that down substantially, but it's still meaningfully heavier than the equivalent hand-written JavaScript would be. This approach is worth it when validation logic is complex, changes often, and drifting between client and server copies is a real cost you've already been paying — not for a login form with three basic checks, where a few dozen lines of native JS is simply the right amount of code.

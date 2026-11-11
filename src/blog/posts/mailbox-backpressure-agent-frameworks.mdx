@@ -1,0 +1,43 @@
+---
+title: "Mailbox Backpressure: The Distributed Systems Problem Hiding Inside Every Agent Framework"
+description: "Agent frameworks borrow the mailbox model for messaging but often skip backpressure, and it shows up as silent memory growth long before anyone notices."
+publishDate: 2026-05-11
+tags:
+  - "agent-driven-development"
+  - "distributed-systems"
+  - "actor-model"
+draft: false
+---
+
+## Introduction
+
+A lot of agent orchestration frameworks describe their messaging layer as a "mailbox" — an agent has an inbox, other agents or the coordinator drop messages into it, the agent processes them at its own pace. This is a direct borrow from actor-model systems like Erlang, and it's a good idea. What's missing from most of these frameworks is the part that made the mailbox model actually safe in its original context: backpressure. Without it, you've built a queue that grows without bound whenever a consumer falls behind, and you've built it in exactly the part of the system least likely to be monitored until it's already a production incident.
+
+## Why this problem is specifically easy to miss with agents
+
+In a conventional message queue, a slow consumer manifests as growing queue depth on a dashboard someone is already watching, because queue depth is a metric infra teams have learned to alert on for twenty years. Agent mailboxes are new enough that this instinct hasn't caught up. An agent falling behind doesn't look like an infrastructure problem — it looks like the agent is "thinking," which is exactly what you'd expect a working LLM call to look like from the outside. The symptom of unbounded mailbox growth (rising memory, rising latency) gets attributed to model latency, not queue depth, because nobody's looking at queue depth as a first-class signal yet.
+
+We found this the slow way: a coordinator agent fanning work out to eleven specialized sub-agents, one of which called a tool with occasional 30-second latency spikes. Its mailbox grew unboundedly during every spike. Memory climbed for weeks in a sawtooth pattern nobody flagged, because each individual spike resolved on its own — until a sustained slowdown in that one tool turned weeks of gradual mailbox growth into an out-of-memory crash that took the whole coordinator down with it, sub-agents that had nothing to do with the slow tool included.
+
+## What backpressure actually means here
+
+Backpressure is a feedback signal from a slow consumer back to its producers, so producers can respond — slow down, buffer elsewhere, or drop — instead of continuing to send at full rate into a queue that's quietly growing. There are three practical strategies, and the right one depends on what the message actually represents:
+
+**Bounded mailbox with blocking send.** The sender blocks until the receiving agent's mailbox has room. This gives you the strongest guarantee — no unbounded growth is possible — at the cost of coupling sender and receiver speed. Appropriate when a dropped message would be genuinely unsafe to lose, like a step in a financial workflow.
+
+```erlang
+send_bounded(Pid, Msg, MaxQueueLen) ->
+    {message_queue_len, Len} = erlang:process_info(Pid, message_queue_len),
+    case Len >= MaxQueueLen of
+        true  -> {error, mailbox_full};
+        false -> Pid ! Msg, ok
+    end.
+```
+
+**Bounded mailbox with load shedding.** The sender doesn't block — it drops the message (or routes it to an overflow path) once the receiver's mailbox is full. Appropriate when a message is a notification or a re-derivable request rather than a unique unit of work — losing it is recoverable.
+
+**Explicit credit-based flow control.** The receiver periodically grants the sender "credits" representing how many more messages it can currently accept, and the sender only sends up to its credit balance. This is the most complex option, but it's the right one when you need graceful throughput scaling rather than a binary full/not-full signal — useful for high-volume agent-to-agent pipelines where you want smooth backpressure rather than sudden blocking.
+
+## What to actually check in your framework
+
+If you're evaluating or building an agent orchestration layer, ask specifically: what happens when an agent's inbox grows faster than the agent can drain it? "The mailbox model" as a marketing description tells you nothing about the answer. If the honest answer is "the queue keeps growing," you have a memory leak with a sympathetic name, not a resilience feature — and it will find you exactly the way it found us: not in a load test, but weeks into production, in the one dependency nobody was watching closely enough.

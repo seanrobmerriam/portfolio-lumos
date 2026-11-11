@@ -1,0 +1,127 @@
+---
+title: "Tutorial: Implementing Idempotency Keys for Payment Webhooks From Scratch"
+description: "Payment providers retry webhooks by design. This tutorial builds a real idempotency layer that safely handles duplicate deliveries without a heavyweight framework."
+publishDate: 2025-12-01
+tags:
+  - "payments"
+  - "tutorial"
+  - "reliability"
+draft: false
+---
+
+## Introduction
+
+Every payment provider's documentation says the same thing in different words: your webhook endpoint will receive the same event more than once, and it's your job to handle that safely. Most tutorials on this topic explain the concept and stop. This one builds the actual dedup layer, including the part everyone skips: what happens when two duplicate deliveries arrive close enough together to race each other.
+
+## Step 1: Understand why duplicates are guaranteed, not just possible
+
+Providers retry webhooks whenever they don't get a fast, unambiguous 2xx response — a timeout, a 500, even a connection reset your server didn't cause. From the provider's perspective, "no clear success" and "definitely failed" look identical, so the only safe assumption on their end is: retry. This isn't a bug in the provider. It's the correct behavior for a system that would rather over-deliver than lose an event. That guarantee is what your endpoint has to be built around.
+
+## Step 2: Extract a stable identity for each event
+
+Most providers include an event ID in the payload specifically for this purpose:
+
+```go
+type WebhookPayload struct {
+	EventID string          `json:"id"`
+	Type    string          `json:"type"`
+	Data    json.RawMessage `json:"data"`
+}
+```
+
+If your provider doesn't supply one, derive a deterministic key yourself from stable fields in the payload — never from a timestamp or anything that changes between "identical" retries.
+
+```go
+func deriveEventKey(payload WebhookPayload) string {
+	h := sha256.Sum256([]byte(payload.Type + string(payload.Data)))
+	return hex.EncodeToString(h[:])
+}
+```
+
+## Step 3: Reserve the key before doing any work
+
+This is the step that's easy to get almost right and dangerously wrong. The naive version checks "have I seen this ID," then processes, then records the ID as seen:
+
+```go
+// WRONG — race condition between check and record
+if !seen(eventID) {
+	processPayment(payload)
+	markSeen(eventID)
+}
+```
+
+Two near-simultaneous deliveries of the same event can both pass the `seen()` check before either has called `markSeen()`, and you'll process the payment twice. The fix is to make reservation atomic — the check and the claim have to be a single database operation, not two:
+
+```go
+func reserveEvent(db *sql.DB, eventID string) (reserved bool, err error) {
+	result, err := db.Exec(`
+		INSERT INTO processed_events (event_id, status, reserved_at)
+		VALUES ($1, 'processing', now())
+		ON CONFLICT (event_id) DO NOTHING
+	`, eventID)
+	if err != nil {
+		return false, err
+	}
+	rows, _ := result.RowsAffected()
+	return rows == 1, nil // true only if THIS call inserted the row
+}
+```
+
+The unique constraint on `event_id` combined with `ON CONFLICT DO NOTHING` is what makes this safe under concurrency — the database, not your application code, is the thing enforcing "only one caller wins."
+
+## Step 4: Wire it into the handler
+
+```go
+func handleWebhook(w http.ResponseWriter, r *http.Request) {
+	var payload WebhookPayload
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "bad payload", http.StatusBadRequest)
+		return
+	}
+
+	reserved, err := reserveEvent(db, payload.EventID)
+	if err != nil {
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return // no reservation was made; a safe retry will happen
+	}
+	if !reserved {
+		// Someone already claimed this event — could be a genuine
+		// duplicate, or the original claim is still processing.
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	if err := processPayment(payload); err != nil {
+		markFailed(db, payload.EventID)
+		http.Error(w, "processing failed", http.StatusInternalServerError)
+		return
+	}
+
+	markCompleted(db, payload.EventID)
+	w.WriteHeader(http.StatusOK)
+}
+```
+
+Notice the response to a duplicate is still `200 OK`, not an error. From the provider's point of view, you *did* successfully receive this event — the first time. Returning an error on the duplicate would only convince the provider to keep retrying something that already succeeded.
+
+## Step 5: Handle the stuck-in-"processing" case
+
+Real systems crash mid-processing. If your server dies after reserving an event but before marking it completed, that event is stuck in `processing` forever, and every future retry will see `reserved == false` and silently no-op — permanently dropping a payment that never actually completed. Add a reclaim path for reservations that have been stuck too long:
+
+```go
+func reclaimStale(db *sql.DB, staleAfter time.Duration) error {
+	_, err := db.Exec(`
+		UPDATE processed_events
+		SET status = 'pending_retry'
+		WHERE status = 'processing'
+		  AND reserved_at < now() - $1::interval
+	`, staleAfter.String())
+	return err
+}
+```
+
+Run this on a schedule, and have your handler treat `pending_retry` as reservable again rather than a permanent duplicate. Without this step, the idempotency layer that's protecting you from double-processing will occasionally protect you from processing at all.
+
+## What this buys you
+
+With reservation-before-processing, atomic claims, and a reclaim path for stuck events, duplicate webhook deliveries — which will happen, not might happen — become a complete non-event instead of a double-charge incident. The whole mechanism is around 60 lines of application code plus one unique index. The idempotency guarantee lives in the database constraint, not in application-level discipline, which is exactly where you want it to live.

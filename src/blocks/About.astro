@@ -1,0 +1,184 @@
+---
+import NoteHandwritten from "@/components/content/NoteHandwritten.astro";
+import Section from "@/components/wrapper/Section.astro";
+import Heading from "@/components/typography/Heading.astro";
+import Eyebrow from "@/components/typography/Eyebrow.astro";
+import ContentWrapper from "@/components/wrapper/ContentWrapper.astro";
+import Paragraph from "@/components/typography/Paragraph.astro";
+
+const sectionLabelClass =
+  "background-yellow angled-text-right-1 emphasis font-figtree padding-inline-2 padding-block-3 margin-top-3 text-wrap-nowrap";
+
+---
+
+<Section id="about" fullHeight={true}>
+    <ContentWrapper>
+
+      <Heading tag="h2" class="radius-small background-yellow angled-text-right-2 emphasis font-quicksand padding-inline-2 padding-block-2 margin-top-3 text-wrap-nowrap drop-shadow-text">
+        a little about me
+      </Heading>
+    </ContentWrapper>
+    <ContentWrapper variant="columns">
+        
+    <NoteHandwritten slot="column2" text="The person designing it is the person building it." />
+   
+    <Paragraph variant="body" maxWidth={70} class="h3">
+      I’m <span class="text-underline-blue">Sean</span>. I design and build digital products — from high traffic, content-driven websites and high performance web
+      applications to native, local-first software built with Rust and Erlang. 
+    </Paragraph>
+    
+<Paragraph variant="body" maxWidth={70}>      My work connects the visual details with the code behind them: how content
+      reads, how an interaction feels and how easily a product can grow. I enjoy
+      moving between design and development, working through an idea until it
+      feels right and works well in someone’s hands.
+    </Paragraph>
+<Paragraph variant="body" maxWidth={70}>       I come from a background of software engineering, but I also
+      care deeply about the details that make a product feel polished and intuitive, which has led me to my current role as a design engineer. My work features the rigor of traditional software engineering practices with the benefit of a design-first approach. I never hand off a design to a separate team; I build it myself. This often comes with longer lead times, but leads to more cohesive, polished products that are easy to maintain and evolve.
+    </Paragraph>
+    <Paragraph variant="body" maxWidth={60}>
+      Whether I’m working on the web or native applications, I care about software that is clear to
+      use and understandable to the people maintaining it. I can help shape an
+      early idea, carry a design through development or join your team where you
+      need an extra pair of hands.
+    </Paragraph>
+    </ContentWrapper>
+  </Section>
+
+  <style>
+        .drop-shadow-text {
+  /* Syntax: offset-x | offset-y | blur-radius | color */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+
+.font-dosis {
+  font-family: "Dosis Variable";
+}
+
+.font-comfortaa {
+  font-family: "Comfortaa Variable";
+}
+
+.font-be-vietnam-pro {
+  font-family: "Be Vietnam Pro";
+}
+
+.font-crimson-pro {
+  font-family: "Crimson Pro Variable";
+}
+
+.font-bitter {
+  font-family: "Bitter Variable";
+}
+
+.font-cairo {
+  font-family: "Cairo Variable";
+}
+
+.font-opendyslexic {
+  font-family: "OpenDyslexic";
+}
+
+.font-lexend {
+  font-family: "Lexend Variable";
+}
+
+.font-quicksand {
+  font-family: "Quicksand Variable";
+}
+
+.font-baskervville {
+  font-family: "Baskervville Variable";
+}
+
+.font-allan {
+  font-family: "Allan";
+}
+
+.font-sono {
+  font-family: "Sono Variable";
+}
+
+.font-dseg7-classic {
+  font-family: "DSEG7 Classic";
+}
+
+.font-londrina-solid {
+  font-family: "Londrina Solid"
+  font-weight: 300;
+}
+
+.font-hachi-maru-pop {
+  font-family: "Hachi Maru Pop";
+}
+
+.font-rubik-dirt {
+  font-family: "Rubik Dirt";
+}
+
+.font-syncopate {
+  font-family: "Syncopate";
+}
+
+.font-monoton {
+  font-family: "Monoton";
+}
+
+.font-honk {
+  font-family: "Honk Variable";
+}
+
+.font-bowlby-one-sc {
+  font-family: "Bowlby One SC";
+}
+
+.font-lilita-one {
+  font-family: "Lilita One";
+}
+
+.font-dela-gothic-one {
+  font-family: "Dela Gothic One";
+}
+
+.font-grandstander {
+  font-family: "Grandstander Variable";
+}
+
+.font-yanone-kaffeesatz {
+  font-family: "Yanone Kaffeesatz Variable";
+}
+
+.font-bangers {
+  font-family: "Bangers";
+}
+
+.font-luckiest-guy {
+  font-family: "Luckiest Guy";
+}
+
+.font-urbanist {
+  font-family: "Urbanist Variable";
+}
+
+.font-anton {
+  font-family: "Anton";
+}
+
+
+
+p {
+    margin-block: 1.5rem; 
+    font-family: "Crimson Pro Variable", serif;
+    font-size: clamp(1.6rem, 1.5vw, 1.9rem); /* Adjust font size based on viewport width */
+    line-height: 1.4; /* Adjust line height for readability */  
+}
+
+h3 {
+    font-family: "Quicksand Variable", sans-serif;
+    font-size: clamp(1.8rem, 2vw, 2.5rem); /* Adjust font size based on viewport width */
+    line-height: 1.3; /* Adjust line height for readability */  
+}
+.dropcap__margin {
+    margin-inline-end: 0.1em; 
+}
+  </style>

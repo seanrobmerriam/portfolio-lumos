@@ -1,0 +1,100 @@
+---
+title: "Building a CLI Toolchain in Go for a Go-Based Frontend Framework"
+description: "A frontend framework without tooling is a library. Building gowasm's CLI meant solving dev-server hot reload and build orchestration entirely in Go, with no Node in the loop."
+publishDate: 2025-12-22
+tags:
+  - "go"
+  - "developer-tooling"
+  - "webassembly"
+draft: false
+---
+
+## Introduction
+
+A component model compiling Go to WebAssembly is, on its own, a library — you still have to hand-write a build command, run a local server, and figure out how to get the browser to reload when a file changes. Every mainstream frontend framework solves this with a Node-based CLI and a bundler. Building gowasm's CLI meant deciding, deliberately, not to reach for that toolchain — the entire point of the framework was avoiding a second language ecosystem, and pulling in Node for the dev server would have quietly reintroduced the exact dependency the project existed to remove.
+
+## What the CLI actually needs to do
+
+Three jobs, none of which are novel individually, but which needed to compose cleanly for the developer experience to feel like a real framework rather than a manual `go build` wrapped in a shell script:
+
+1. Compile Go to WASM on file change
+2. Serve the compiled output alongside static assets
+3. Reload the browser once a new build is ready
+
+## Watching files without a Node-based watcher
+
+Go's ecosystem has solid file-watching libraries, so this part was more straightforward than expected — `fsnotify` handles the OS-level watch APIs across platforms:
+
+```go
+func watchAndRebuild(srcDir string, onRebuild func()) error {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		return err
+	}
+	defer watcher.Close()
+
+	if err := filepath.WalkDir(srcDir, func(path string, d fs.DirEntry, err error) error {
+		if d.IsDir() {
+			return watcher.Add(path)
+		}
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	debounce := time.NewTimer(0)
+	<-debounce.C // drain initial fire
+
+	for {
+		select {
+		case event := <-watcher.Events:
+			if filepath.Ext(event.Name) == ".go" {
+				debounce.Reset(150 * time.Millisecond) // coalesce rapid saves
+			}
+		case <-debounce.C:
+			onRebuild()
+		}
+	}
+}
+```
+
+The debounce timer mattered more than it looks like it should — editors and formatters routinely fire multiple filesystem events for what a developer experiences as a single save, and rebuilding on every raw event meant occasionally kicking off two overlapping `go build` invocations for one actual change.
+
+## Reloading the browser without a bundler's dev-server protocol
+
+This was the part with no obvious off-the-shelf answer, since most existing solutions assume a JavaScript bundler's dev-server infrastructure underneath them. The CLI runs a small HTTP server that also opens a WebSocket connection to the page, and pushes a reload signal once a rebuild finishes:
+
+```go
+func serveDev(buildDone <-chan struct{}) {
+	var clients sync.Map
+
+	http.HandleFunc("/__reload", func(w http.ResponseWriter, r *http.Request) {
+		conn, _ := upgrader.Upgrade(w, r, nil)
+		id := uuid.New()
+		clients.Store(id, conn)
+		defer clients.Delete(id)
+		select {} // keep connection open; reload is server-pushed, not polled
+	})
+
+	go func() {
+		for range buildDone {
+			clients.Range(func(_, v any) bool {
+				v.(*websocket.Conn).WriteMessage(websocket.TextMessage, []byte("reload"))
+				return true
+			})
+		}
+	}()
+
+	http.ListenAndServe(":8080", nil)
+}
+```
+
+A tiny injected script on the client side listens for that one message and calls `location.reload()`. No polling, no bundler-specific protocol — just a plain WebSocket doing exactly one job.
+
+## What building this in Go, specifically, bought
+
+Distributing the CLI as a single static Go binary meant the entire developer setup for a new gowasm project was "download one binary, run one command" — no `npm install`, no dependency tree to audit, no lockfile drift between machines. That property was the actual point of building the toolchain in Go instead of reaching for existing, more mature JavaScript dev-server infrastructure: every piece of tooling brought in from outside Go would have reintroduced exactly the "now you need two ecosystems" problem the framework exists to avoid.
+
+## The trade-off, stated plainly
+
+Building the dev server and file watcher from scratch in Go meant reimplementing small pieces of well-trodden ground that mature JS tooling (esbuild, Vite) has already solved more completely — better source maps, more sophisticated caching, broader plugin ecosystems. That's a real, ongoing cost, paid in engineering time whenever a rough edge shows up that a mature bundler would have already smoothed over. It was worth paying for a framework whose entire premise is "you shouldn't need a second toolchain," but it's not a decision that generalizes to every project — for most teams, adopting existing bundler tooling remains the right call, and building your own is worth it only when the whole point of the project is avoiding the ecosystem that tooling comes from.

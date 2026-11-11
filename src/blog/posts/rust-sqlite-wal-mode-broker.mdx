@@ -1,0 +1,50 @@
+---
+title: "SQLite in WAL Mode as a Message Broker's Storage Engine"
+description: "SQLite sounds like an odd choice for a message broker, but WAL mode makes it a legitimate one. Here's what actually broke and what didn't while building a Rust broker on it."
+publishDate: 2025-07-30
+tags:
+  - "rust"
+  - "sqlite"
+  - "storage-engines"
+draft: false
+---
+
+## Introduction
+
+Telling another engineer you built a message broker on SQLite tends to produce the same reaction: a pause, then "why not Postgres, or an actual queue product." It's a fair question. SQLite's reputation is "fine for a mobile app, not a real server workload," and that reputation is mostly earned by its default rollback-journal mode, which serializes all writers behind a single lock. WAL mode changes that story enough to make it a legitimate choice for Postbox, with specific trade-offs worth knowing before you make the same call.
+
+## What WAL mode actually changes
+
+SQLite's default journaling mode locks the entire database file for the duration of a write transaction, blocking all readers until it commits. That's the behavior most of SQLite's "don't use this for a server" reputation is based on, and it's a completely fair criticism of that mode specifically.
+
+Write-Ahead Logging mode changes the model: writes append to a separate WAL file instead of modifying the main database file in place, and readers can continue reading a consistent snapshot of the main database file while a write is in progress. The practical result is that readers no longer block on writers, though writers still serialize against each other — SQLite in WAL mode gives you one writer at a time with concurrent readers, not true multi-writer concurrency.
+
+```rust
+pub fn open_wal_mode(path: &Path) -> Result<SqlitePool> {
+    let opts = SqliteConnectOptions::new()
+        .filename(path)
+        .journal_mode(SqliteJournalMode::Wal)
+        .synchronous(SqliteSynchronous::Normal)
+        .busy_timeout(Duration::from_secs(5));
+
+    SqlitePoolOptions::new()
+        .max_connections(1) // single-writer discipline, enforced at the pool level
+        .connect_with(opts)
+}
+```
+
+That `max_connections(1)` is deliberate, not an oversight. Since SQLite only allows one writer at a time regardless of how many connections you open, using `sqlx`'s pool to enforce that at the application level avoids a pile of `SQLITE_BUSY` retries under contention — better to queue at the pool than fight for the SQLite-level write lock repeatedly.
+
+## Where this held up
+
+For Postbox's actual write pattern — enqueue a message, claim a message, commit or requeue on a checkpoint token — writes are small and short-lived. WAL mode's readers-never-block-on-writers property meant that admin-surface reads (listing mailbox depth, inspecting the dead-letter queue) never contended with the hot path of message claim/commit, which was the main practical concern going in.
+
+`synchronous(Normal)` instead of `Full` was the other consequential choice: `Full` forces an fsync on every WAL checkpoint for maximum durability against a power loss, at real latency cost; `Normal` still fsyncs the WAL file itself (so committed transactions survive an application crash) but relaxes the guarantee around OS-level power loss specifically. For a self-hosted broker where "the whole machine loses power mid-write" is a real but rare failure mode, and "the process crashes but the machine stays up" is the common one, `Normal` was the right point on that trade-off curve — full durability against every failure mode wasn't worth the latency it would have cost on every write.
+
+## Where it genuinely wouldn't have held up
+
+Single-writer serialization is the real ceiling. Postbox's write volume, measured under realistic agent-messaging load, stayed comfortably under the point where single-writer serialization became the bottleneck — but I want to be specific that this was measured, not assumed. If Postbox needed to scale write throughput past what one writer thread can serialize, WAL mode doesn't fix that; it's a concurrency model with one writer built into its design, not a limitation of my configuration. That's the point where the right answer becomes "migrate to Postgres," not "tune SQLite harder."
+
+## The actual decision rule
+
+WAL-mode SQLite is a legitimate storage engine for a service when your write pattern is small transactions, your read traffic benefits from not blocking on writers, and your write *volume* doesn't require concurrent writers to keep up. It's the wrong choice the moment any of those stop being true. The mistake isn't choosing SQLite — it's choosing it, or ruling it out, based on its reputation instead of on which of those three conditions actually describes your workload.

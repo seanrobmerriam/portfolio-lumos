@@ -1,0 +1,70 @@
+---
+title: "Why gowasm Reimplements React-Style Reconciliation Instead of Diffing the DOM Directly"
+description: "Diffing the actual DOM sounds simpler than a virtual DOM, until you measure it. Here's why gowasm builds an in-memory tree instead, and what that cost in Go specifically."
+publishDate: 2025-04-15
+tags:
+  - "go"
+  - "webassembly"
+  - "frontend-architecture"
+draft: false
+---
+
+## Introduction
+
+The obvious way to update a UI when state changes is to just look at the DOM as it currently exists, compare it to what it should look like, and patch the difference. No virtual tree, no reconciliation algorithm, no extra memory for a shadow copy of something the browser already has a copy of. I built gowasm's first prototype exactly this way. It's also, it turns out, dramatically slower than the "wasteful-looking" virtual-DOM approach almost every serious frontend framework converges on, and the reason why is specific to how DOM access actually works from WebAssembly.
+
+## Why "just diff the real DOM" is slower than it sounds
+
+Every read from the DOM — checking a node's current attributes, its children, its text content — is a call across the WASM/JavaScript boundary. From native Go code, that boundary crossing is cheap. From compiled WASM calling into `js.Value` methods, it carries real, measurable marshaling overhead: values have to be converted between Go's representation and JavaScript's, and each call is a round-trip through the WASM host interface, not a plain function call.
+
+Diffing the *real* DOM directly means every single comparison — is this attribute the same, does this child still exist — is a DOM read, which is a boundary crossing. A component tree with even a few dozen elements turns a state update into dozens of boundary crossings just to figure out what changed, before a single actual patch has been applied.
+
+## What an in-memory virtual tree avoids
+
+Keeping a lightweight, pure-Go representation of the previous render tree means the diff itself — comparing old tree to new tree — happens entirely in native Go memory, with zero boundary crossings:
+
+```go
+type VNode struct {
+	Tag      string
+	Attrs    map[string]string
+	Children []*VNode
+	domRef   js.Value // only set once actually mounted
+}
+
+func diff(old, new *VNode) []Patch {
+	var patches []Patch
+	if old.Tag != new.Tag {
+		return []Patch{{Kind: Replace, Node: new}}
+	}
+	patches = append(patches, diffAttrs(old.Attrs, new.Attrs)...)
+	patches = append(patches, diffChildren(old.Children, new.Children)...)
+	return patches
+}
+```
+
+Only once the full diff is computed, entirely in Go memory, does the code cross the WASM/JS boundary — and only for the patches that actually need to happen, not for every comparison along the way:
+
+```go
+func applyPatches(patches []Patch) {
+	for _, p := range patches {
+		switch p.Kind {
+		case Replace:
+			p.Node.domRef.Call("replaceWith", render(p.Node))
+		case UpdateAttr:
+			p.Node.domRef.Call("setAttribute", p.Key, p.Value)
+		}
+	}
+}
+```
+
+## What this actually measured out to
+
+On a moderately complex component tree (around 200 nodes) with a small, localized state change, the direct-DOM-diff prototype took roughly 40ms per update, almost entirely boundary-crossing overhead from comparison reads. The virtual-tree version, doing the same logical diff entirely in Go memory before touching the DOM at all, took under 3ms — the actual DOM patches applied were identical in both versions; the cost was in how the *comparison* was done, not in the final mutations.
+
+## The trade-off this approach takes on
+
+Keeping an in-memory tree isn't free — it's a real memory cost proportional to component tree size, held for the lifetime of every mounted component, and it's an entire reconciliation algorithm to get right (key-based list diffing, in particular, has real edge cases). For a WASM target specifically, though, that memory and implementation cost is comfortably cheaper than the boundary-crossing cost of skipping it, which is the opposite trade-off native JavaScript frameworks sometimes face, since JS already lives on the same side of the boundary as the DOM.
+
+## The generalizable point
+
+"Virtual DOM" is often explained as a general performance optimization, which makes it sound like premature optimization when your app is small. For a WASM-compiled framework specifically, it's not optional in the same way — it's addressing a real, structural cost (the boundary crossing) that doesn't exist at all for JavaScript frameworks running natively alongside the DOM. The lesson generalizes past this one architecture decision: the right amount of caching or intermediate representation depends on exactly where the expensive boundary in your system actually sits, not on a generic best practice copied from a different runtime environment.

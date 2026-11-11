@@ -1,0 +1,43 @@
+---
+type Props = {
+  /** Set to `false` to omit the component. */
+  render?: boolean;
+  /** Steps in the project process. */
+  steps: { heading: string; text: string }[];
+};
+const { render = true, steps } = Astro.props;
+---
+{render && steps?.length > 0 && <ol class="annotated-process_wrap">
+  {steps.map((step, index) => <li class="annotated-process_step">
+    <span class="annotated-process_number" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+    <h3 class="annotated-process_title text-style-h3">{step.heading}</h3>
+    <p class="annotated-process_text">{step.text}</p>
+  </li>)}
+</ol>}
+<style is:global>
+@layer components {
+  .annotated-process_wrap { list-style: none; padding: 0; margin: 0; width: 100%; }
+  .annotated-process_step {
+    display: grid;
+    grid-template-columns: 3.5rem minmax(0, 1fr);
+    gap: 1rem;
+    padding-block: 2rem;
+    border-bottom: .08rem dashed color-mix(in srgb, var(--color-black) 30%, transparent);
+    @media (width >= 48rem) { grid-template-columns: 4rem minmax(0, .8fr) minmax(0, 1.2fr); gap: 2rem; }
+  }
+  .annotated-process_number {
+    display: grid; place-items: center; align-self: start;
+    width: 3.25rem; aspect-ratio: 1;
+    border: .12rem solid currentColor;
+    border-radius: 44% 53% 48% 46%;
+    background: var(--color-green);
+    font-family: "Delicious Handrawn", cursive;
+    font-size: 1.7rem; transform: rotate(-5deg);
+  }
+  .annotated-process_title { margin: 0; font-family: "Figtree Variable", sans-serif; }
+  .annotated-process_text {
+    grid-column: 2; max-width: 48ch; margin: 0;
+    @media (width >= 48rem) { grid-column: 3; }
+  }
+}
+</style>

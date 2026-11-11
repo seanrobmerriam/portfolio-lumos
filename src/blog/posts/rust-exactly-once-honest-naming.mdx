@@ -1,0 +1,67 @@
+---
+title: "Building an 'Exactly-Once' Broker Taught Me to Stop Calling It That"
+description: "Exactly-once delivery is a well-known impossibility result, not an engineering challenge. Here's how honest naming changed the design of a Rust message broker."
+publishDate: 2025-03-18
+tags:
+  - "rust"
+  - "distributed-systems"
+  - "messaging"
+draft: false
+---
+
+## Introduction
+
+Partway through building a Rust message broker for agent-to-agent communication, I had to make a decision that had nothing to do with code: what to call the delivery guarantee. "Exactly-once" is the phrase everyone reaches for, it's the phrase customers ask about by name, and it's also, in the literal sense, not achievable across an unreliable network. I want to walk through why that's true, and why naming the guarantee honestly changed the actual design for the better, not just the marketing copy.
+
+## Why exactly-once, literally, can't exist
+
+The impossibility isn't a Rust problem or an implementation-quality problem — it's a consequence of the FLP-adjacent reality that a sender can never distinguish, from the sender's side alone, between "the message was received and the acknowledgment was lost" and "the message was never received at all." Both look identical: silence. The sender's only two rational choices are to retry (risking a duplicate if the message *did* arrive) or not retry (risking permanent loss if it didn't). There is no third option that reliably picks the correct one, because the information needed to pick correctly doesn't exist on the sender's side of a partition.
+
+Every system claiming true exactly-once delivery is, if you look closely at its actual guarantees, doing one of two things: quietly downgrading to at-least-once with deduplication and calling the combination "exactly-once" as a user-facing simplification, or making an assumption about the network and failure model narrow enough that the impossibility doesn't bite in practice — which is a legitimate engineering trade, but a different claim than the marketing implies.
+
+## What I actually built instead
+
+Postbox, the broker I was building, delivers messages with an **at-least-once** guarantee at the transport level, backed by a durable idempotency ledger that lets consumers detect and skip duplicates. The wire protocol is honest about this:
+
+```rust
+pub enum DeliveryOutcome {
+    Delivered,
+    DuplicateSkipped { original_delivery: DateTime<Utc> },
+}
+
+pub async fn deliver(&self, msg: Message) -> Result<DeliveryOutcome> {
+    let idempotency_key = msg.idempotency_key();
+
+    if let Some(prior) = self.ledger.lookup(&idempotency_key).await? {
+        return Ok(DeliveryOutcome::DuplicateSkipped {
+            original_delivery: prior.delivered_at,
+        });
+    }
+
+    self.mailbox_store.insert(&msg).await?;
+    self.ledger.record(&idempotency_key, Utc::now()).await?;
+    Ok(DeliveryOutcome::Delivered)
+}
+```
+
+Naming the return type `DuplicateSkipped` rather than silently deduplicating and always returning `Delivered` was a deliberate choice: consumers can see, and log, exactly how often duplicates are actually occurring. That visibility turned out to matter — it surfaced a retry storm from one client integration within the first week, something a silent "exactly-once, don't worry about it" API would have hidden entirely.
+
+## Why the honest name changed the design, not just the docs
+
+Once I stopped pretending the broker delivered exactly once, the natural next question became unavoidable: what happens when a consumer *doesn't* process idempotently? The honest framing forced me to design for that case directly rather than assume it away. The answer was making idempotent processing a documented contract consumers opt into explicitly, with the broker providing the idempotency key and ledger lookup as tools, not a guarantee it silently enforces on the consumer's behalf.
+
+```rust
+pub trait IdempotentConsumer {
+    /// Called once per unique idempotency_key. The broker guarantees
+    /// this will not be called twice for the same key, but does NOT
+    /// guarantee the underlying message wasn't delivered to the transport
+    /// layer more than once before dedup occurred.
+    async fn process_once(&self, msg: Message) -> Result<()>;
+}
+```
+
+The comment in that trait definition is doing real work. It's telling the consumer author exactly where the guarantee's boundary sits, instead of letting them assume a stronger guarantee than the system actually provides.
+
+## The broader lesson
+
+A guarantee that's named more strongly than it's actually implemented doesn't just mislead users — it lets the implementer stop asking the hard design questions, because the name already implies they're solved. Calling Postbox's delivery model "at-least-once plus idempotency" instead of "exactly-once" wasn't a marketing downgrade. It was the thing that made me actually design the deduplication contract properly instead of hand-waving past it.

@@ -1,0 +1,61 @@
+---
+title: "Gang Scheduling: The GPU Cluster Feature Kubernetes Won't Give You for Free"
+description: "Distributed training jobs need all-or-nothing placement, but Kubernetes schedules pods one at a time. Here's why that gap catechnology deadlocks and how to close it."
+publishDate: 2025-06-17
+tags:
+  - "kubernetes"
+  - "gpu-scheduling"
+  - "distributed-training"
+draft: false
+---
+
+## Introduction
+
+The first time a distributed training job deadlocked our cluster, it took a full afternoon to understand why. Four pods needed to start together for a data-parallel job to begin its collective communication step. Kubernetes had scheduled three of them and left the fourth pending, waiting on a GPU that was itself waiting on a different job's pending pod. Every pod was technically "scheduled." Nothing was running. This is what happens when you hand gang-scheduling problems to a scheduler that doesn't know gangs exist.
+
+## Why Kubernetes schedules this way by default
+
+Kubernetes's default scheduler makes placement decisions pod by pod, independently, as each one becomes ready. This is the right design for the workloads Kubernetes was built for — stateless web services, queue workers, anything where one more or one fewer replica running doesn't change correctness. A web server doesn't care if it's the third pod scheduled or the thirtieth.
+
+Distributed training jobs violate that assumption entirely. A data-parallel or model-parallel job with N workers needs all N scheduled and running before any of them can do useful work, because they synchronize gradients or activations across all ranks at fixed points. Partial placement isn't a degraded version of the job — it's not the job at all. It's N-1 processes burning GPU time waiting for a rank that may never arrive.
+
+## The deadlock pattern specifically
+
+Deadlocks emerge when two or more gang jobs partially acquire overlapping resources:
+
+1. Job A needs 8 GPUs. The scheduler places 5 of its pods on available capacity.
+2. Job B needs 8 GPUs. The scheduler places 3 of its pods on the remaining capacity.
+3. Neither job can proceed — Job A is short 3 GPUs, Job B is short 5, and the GPUs each is holding are exactly what the other needs.
+4. Without intervention, both jobs sit fully "scheduled" and fully idle, indefinitely.
+
+This isn't a hypothetical edge case; it's close to the default outcome once you have enough concurrent gang jobs competing for a finite pool, because the scheduler has no concept of "all of these pods or none of them."
+
+## What gang scheduling actually requires
+
+A gang scheduler needs to reason about a job's pods as a single atomic placement unit rather than N independent ones. The two building blocks that make this work:
+
+**Co-scheduling with a minimum-member quorum.** The scheduler holds all of a gang's pods in a pending state until enough cluster capacity is simultaneously available for the whole gang, then binds them together in one pass. No pod in the gang starts until every pod in the gang can start.
+
+**Resource reservation, not just resource requests.** While a gang is accumulating enough free capacity to place, that capacity needs to be provisionally reserved against other gangs' claims — otherwise two gangs can each observe "enough free capacity" at the same instant and both commit, overcommitting the cluster.
+
+In practice, this is what schedulers like Volcano and Kueue add on top of vanilla Kubernetes: a `PodGroup` (or equivalent) concept representing the gang, with `minMember` semantics enforced at admission time.
+
+```yaml
+apiVersion: scheduling.volcano.sh/v1beta1
+kind: PodGroup
+metadata:
+  name: training-job-42
+spec:
+  minMember: 8
+  minResources:
+    nvidia.com/gpu: "8"
+  queue: research-default
+```
+
+With this in place, the 5-pods-of-8 scenario from earlier simply doesn't happen — Job A's pods stay pending as a group until 8 GPUs are simultaneously available, and the scheduler won't partially commit.
+
+## The trade-off nobody advertises
+
+Gang scheduling fixes deadlock and partial-placement waste, but it introduces a different failure mode: a large gang job can now starve indefinitely if the cluster never has enough simultaneous free capacity, even though smaller jobs could easily run in the gaps. The fix is priority-aware preemption — letting a waiting gang reclaim capacity from lower-priority opportunistic jobs rather than waiting for it to free up naturally — which is a scheduling policy decision, not something gang scheduling gives you automatically.
+
+Gang scheduling solves "don't deadlock." It doesn't solve "be fair." Those are two different problems, and conflating them is how clusters end up with the deadlock fixed and a new starvation problem nobody planned for.

@@ -14,19 +14,30 @@
         "@aws-sdk/client-s3": "^3.1161.0",
         "@aws-sdk/s3-presigned-post": "^3.1161.0",
         "@aws-sdk/s3-request-presigner": "^3.1161.0",
+        "@fontsource-variable/baskervville": "^5.3.0",
+        "@fontsource-variable/bitter": "^5.3.0",
+        "@fontsource-variable/cairo": "^5.3.0",
+        "@fontsource-variable/comfortaa": "^5.3.0",
+        "@fontsource-variable/crimson-pro": "^5.3.0",
         "@fontsource-variable/dosis": "^5.3.0",
         "@fontsource-variable/figtree": "^5.3.0",
         "@fontsource-variable/fredoka": "^5.3.0",
         "@fontsource-variable/grandstander": "^5.3.0",
+        "@fontsource-variable/honk": "^5.3.0",
+        "@fontsource-variable/lexend": "^5.3.0",
         "@fontsource-variable/m-plus-1": "^5.3.1",
         "@fontsource-variable/oswald": "^5.3.0",
         "@fontsource-variable/outfit": "^5.3.0",
+        "@fontsource-variable/quicksand": "^5.3.0",
         "@fontsource-variable/red-hat-display": "^5.3.0",
         "@fontsource-variable/reddit-sans": "^5.3.0",
+        "@fontsource-variable/sono": "^5.3.0",
         "@fontsource-variable/stack-sans-notch": "^5.3.0",
         "@fontsource-variable/urbanist": "^5.3.0",
+        "@fontsource-variable/yanone-kaffeesatz": "^5.3.0",
         "@fontsource/acme": "^5.3.0",
         "@fontsource/alfa-slab-one": "^5.3.0",
+        "@fontsource/allan": "^5.3.0",
         "@fontsource/allerta-stencil": "^5.3.0",
         "@fontsource/anton": "^5.3.0",
         "@fontsource/architects-daughter": "^5.3.0",
@@ -34,17 +45,26 @@
         "@fontsource/bangers": "^5.3.0",
         "@fontsource/barriecito": "^5.3.0",
         "@fontsource/bayon": "^5.3.0",
+        "@fontsource/be-vietnam-pro": "^5.3.0",
         "@fontsource/boogaloo": "^5.3.0",
         "@fontsource/bowlby-one-sc": "^5.3.0",
+        "@fontsource/dela-gothic-one": "^5.3.0",
         "@fontsource/delicious-handrawn": "^5.3.0",
         "@fontsource/delius-unicase": "^5.3.0",
+        "@fontsource/dseg7-classic": "^5.3.0",
+        "@fontsource/hachi-maru-pop": "^5.3.0",
         "@fontsource/indie-flower": "^5.3.0",
         "@fontsource/lilita-one": "^5.3.0",
+        "@fontsource/londrina-solid": "^5.3.0",
         "@fontsource/luckiest-guy": "^5.3.0",
         "@fontsource/manjari": "^5.3.0",
         "@fontsource/momo-trust-display": "^5.3.0",
+        "@fontsource/monoton": "^5.3.0",
+        "@fontsource/opendyslexic": "^5.3.0",
         "@fontsource/ranchers": "^5.3.0",
+        "@fontsource/rubik-dirt": "^5.3.0",
         "@fontsource/special-elite": "^5.3.0",
+        "@fontsource/syncopate": "^5.3.0",
         "@fontsource/thasadith": "^5.3.0",
         "@fontsource/zen-maru-gothic": "^5.3.1",
         "@neon/auth": "^0.8.2",
@@ -53,7 +73,7 @@
         "@neon/functions": "^0.11.0",
         "@neon/realtime": "^0.1.2",
         "@tabler/icons": "^3.50.0",
-        "@tabler/icons-astro": "^3.50.0",
+        "@tabler/icons-astro": "^3.51.0",
         "astro": "^7.4.4",
         "files-sdk": "^3.1.2",
         "neon": "^8.17.1",
@@ -178,6 +198,8 @@
 
     "@better-auth/prisma-adapter": ["@better-auth/prisma-adapter@1.7.15", "", { "peerDependencies": { "@better-auth/core": "^1.7.15", "@better-auth/utils": "^0.4.2 || ^0.5.0", "@prisma/client": "^5.0.0 || ^6.0.0 || ^7.0.0", "prisma": "^5.0.0 || ^6.0.0 || ^7.0.0" }, "optionalPeers": ["@prisma/client", "prisma"] }, "sha512-YMMA2HnEPFcUNw/mJWxBxoAdRV2B1ZQ8rRsBJwwTQsC6sfZVYr9f/5zslizf6J7eRpOpgqpiwumSRhdeLf1EOg=="],
 
+    "@better-auth/telemetry": ["@better-auth/telemetry@1.7.15", "", { "peerDependencies": { "@better-auth/core": "^1.7.15", "@better-auth/utils": "^0.4.2 || ^0.5.0", "@better-fetch/fetch": "1.3.3" } }, "sha512-qZq491FZNLRCFmBo97DK+wOKfKPcSMeP87BoqH1nWZc0FZi2fbS4vqmwgn9OdQU7LRjHs/757o64iao1vrvkKA=="],
+
     "@better-auth/utils": ["@better-auth/utils@0.5.1", "", { "dependencies": { "@noble/hashes": "^2.0.1" } }, "sha512-WETqw5vQ52uQ/xwWR4E8rTgT6fDEr/wnS+otDNkBCa/69281FCF32OKDdQUcahMCnjsvqXBNiEvAQHFB0EVRRg=="],
 
     "@better-fetch/fetch": ["@better-fetch/fetch@1.3.2", "", {}, "sha512-Gs7n99b5tqUC6cQAPbV0uED3IraHB6xQbHLQ/C3l7ZFafHScOx9pQ+DYmP5blbLFShVWLqxNUlI9wi4xU/X+ow=="],
@@ -278,6 +300,16 @@
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.28.1", "", { "os": "win32", "cpu": "x64" }, "sha512-bm4Mowrv+GXMlpWX++EcXw/iLyd1o3+bJkC2DkWXYVvgZCqD/bSj9ctZeAMC3cIxgjRVR2Dufaiu4YPxr5gW1A=="],
 
+    "@fontsource-variable/baskervville": ["@fontsource-variable/baskervville@5.3.0", "", {}, "sha512-plMCbrH4HUMydZpvAcQSt30kXJsBMB9JqgRhbX38EVbu8msezYF7FXvjWOTYwgBxckwxpi1bhVh5I9Wy4pwjcg=="],
+
+    "@fontsource-variable/bitter": ["@fontsource-variable/bitter@5.3.0", "", {}, "sha512-TNGusdX+fjWE2b8pTG7kH1A615DbjjSj8/PwVm+iyiFiLFtioHXt6eH5jIFE2kmiA3Ogp03jEyZDsukotzC+4Q=="],
+
+    "@fontsource-variable/cairo": ["@fontsource-variable/cairo@5.3.0", "", {}, "sha512-zkxIsVQ406AJXD1qaldeOj+CIsMzRMXRT2x6fkYjNJE2DFsqGMzNGFhdrZdZagq3qX9JwaMaZetMc7/oUlpfpg=="],
+
+    "@fontsource-variable/comfortaa": ["@fontsource-variable/comfortaa@5.3.0", "", {}, "sha512-al/XR/3rUwZRLPAgAN7VsHKudQ27++W2sEQPhRpkg7x9a8VISekS3eQr4c3lICNWDfflz+gVes8dfekL/yY+Ng=="],
+
+    "@fontsource-variable/crimson-pro": ["@fontsource-variable/crimson-pro@5.3.0", "", {}, "sha512-CmtGOKsw1H/JcXOcncu8SWOnhWlyLaAMbCVlG9yR5kz95hrxYU3A1+0DxdRbz/MFhCJGxchgqwPxLAlL0cWvdQ=="],
+
     "@fontsource-variable/dosis": ["@fontsource-variable/dosis@5.3.0", "", {}, "sha512-+coRIsO0/tFVtUsfKK4ZSZVh/fD0J6A6T4DyUvAaqhzmBjVWqptuiYB9xOsRTZ1jwxZPIE6u1TWmk8h3pM2TwA=="],
 
     "@fontsource-variable/figtree": ["@fontsource-variable/figtree@5.3.0", "", {}, "sha512-VRVodD7OiG7apQwE8/2fMjaqpY/a0qRJqL5HtYj8CKIVps+9amaFcdfKmDIf7iqYQx6iPLlArVXAfKeIZmVcNQ=="],
@@ -286,23 +318,35 @@
 
     "@fontsource-variable/grandstander": ["@fontsource-variable/grandstander@5.3.0", "", {}, "sha512-vD2bm4My0+kgUxIZ6J+CSKMonbbxxMF0dWq4uQYJP2ZNyHC+ss1XZPu/WCRB72K15+gaLs97UfR6UWU6a2GmvA=="],
 
+    "@fontsource-variable/honk": ["@fontsource-variable/honk@5.3.0", "", {}, "sha512-4xkLvHkDwKOtCPZsXGgw0Mm73UmynsuNpg7oN7mcpFFoXfDl0YXyFK62VapP0f1kgjceEHtwneTPu0Vo6IX7SQ=="],
+
+    "@fontsource-variable/lexend": ["@fontsource-variable/lexend@5.3.0", "", {}, "sha512-3SXtiZ8rFbT0oaPzEboCG5RM3jtyhpNxandh1jWNLqvrJRfV/eP3R+GGw+o5e3hS1uqmAGutKxSvaWG5oyrimA=="],
+
     "@fontsource-variable/m-plus-1": ["@fontsource-variable/m-plus-1@5.3.1", "", {}, "sha512-PWa0cJ5X/gnwkVhMgRXSpi2+I8kRIb7gRHL2lld4TuxumNbZ+9Ef6lUnX+P51ixSl8MEUD5HHp7E62dmGML1wA=="],
 
     "@fontsource-variable/oswald": ["@fontsource-variable/oswald@5.3.0", "", {}, "sha512-sSZzcTeaQGNyZbTVlS4tNNHElK38UktFLqKd6NQDLFCBV27320rQC3kXSZVytYm1PPjKmPxqVaGwqj7LEKUWQw=="],
 
     "@fontsource-variable/outfit": ["@fontsource-variable/outfit@5.3.0", "", {}, "sha512-fPb5XnYK0k7SbR++HEmm4+ZqDszmLKQ+sPRUr8oQ/KNC0vy6r6hazJFe8iYozv4cqlHbvJ/JECkJWrfDodUMVQ=="],
 
+    "@fontsource-variable/quicksand": ["@fontsource-variable/quicksand@5.3.0", "", {}, "sha512-EMyoXnGC0uIbjyHDB01MTJoQuODsMo7Q/4XLEwN97YJEeV1WIVFI0QBiW2exGnxvhnMHb+IwQ9E5QZDgGMWCHw=="],
+
     "@fontsource-variable/red-hat-display": ["@fontsource-variable/red-hat-display@5.3.0", "", {}, "sha512-8u4FI+i3fkB8erlN9lMGa7Hm7aBCRP34y/aPwriBUiDYoxmS/N1QvBrd/hghUBnHJKrVKRg3h4Oubpyl2H8smw=="],
 
     "@fontsource-variable/reddit-sans": ["@fontsource-variable/reddit-sans@5.3.0", "", {}, "sha512-naTNvstQ0DWDc05RhlLncHLavIYcSwQHQtb6y2CezNxHtlRAQ7+dVTcfHhHUPc409PJdPOewAhdevlsV78YOXg=="],
+
+    "@fontsource-variable/sono": ["@fontsource-variable/sono@5.3.0", "", {}, "sha512-4VcX+1rLjw6+13N6uuNzGmXHM3WV2sU8kwNbbsjffjDTcc7AisjMN7BAN7WEe5glTuaCOiszQV/9WiT0ldZgNw=="],
 
     "@fontsource-variable/stack-sans-notch": ["@fontsource-variable/stack-sans-notch@5.3.0", "", {}, "sha512-RDnrc2zMy8WEWgTp9werbgQPbQg86PIdcW6iOV3xV+C9sItFr4oJ2Ta2ir1dpSBXOxjzEFrxRPRm8EncInrVsQ=="],
 
     "@fontsource-variable/urbanist": ["@fontsource-variable/urbanist@5.3.0", "", {}, "sha512-riHbcRgoOhEdCwVw3n3R1JLEwvRD1N9GlXtBcwl/UJ2KabfyDBuryE2Yq10308QJgbXw3F/IFF+VoMuuqwVfIA=="],
 
+    "@fontsource-variable/yanone-kaffeesatz": ["@fontsource-variable/yanone-kaffeesatz@5.3.0", "", {}, "sha512-G9b+BdwnXRF9GXmMIv/0flUTse2Ftd6N82AbQAZ74oCGEUCsrVsmEEnCq9nXuQFkeQMCma2yod13yvA4v4IHEQ=="],
+
     "@fontsource/acme": ["@fontsource/acme@5.3.0", "", {}, "sha512-D/btsH0bkMlfLH6pxvHo1LdEbj0CeT8DLnKlliy4HPwfWQaPilxL+jlw5f/QaJDj7iKi9qcAFcfF0zrEi5zi1g=="],
 
     "@fontsource/alfa-slab-one": ["@fontsource/alfa-slab-one@5.3.0", "", {}, "sha512-J/ANFZ7S9CbZClr/QhMjmBtpFmmKipVkEXHj20aurR5uqJPCBChVPJn1/kx6vtrwnfnDY0kQaYSTYasSt4GruA=="],
+
+    "@fontsource/allan": ["@fontsource/allan@5.3.0", "", {}, "sha512-n3PrJRxZJC5iuBHnrfdLW5QF+LoHjgKdi0ODNudpzSZHhEHNI0FbcaTe+YFj2ZF9WVys2B1ZqH5TY5xid1Xcow=="],
 
     "@fontsource/allerta-stencil": ["@fontsource/allerta-stencil@5.3.0", "", {}, "sha512-ydTiW3XTglxA3LvOkmowHdv6ji46VVU4v5iRtj0EixO6r0JkDsxZO/zwO/OXnBWL9rIXb0NAVJcy2sxKOs8zCw=="],
 
@@ -318,17 +362,27 @@
 
     "@fontsource/bayon": ["@fontsource/bayon@5.3.0", "", {}, "sha512-TBCIQwjJ/wpVSWk2Gj8/WXV0IpIFSxmghqA1fK1oKuvNs/OODfjozif9h3ombdaRCTtkIgVEQzUIxCzkc3Bqhw=="],
 
+    "@fontsource/be-vietnam-pro": ["@fontsource/be-vietnam-pro@5.3.0", "", {}, "sha512-xhAQBGHDxP5BF8IJxedy5MoWUmc1DlPCcZbMLhvnPkf8TaYCbbUVs3LjpuJ4BYdTrdiCLaewNaY8z+owq/FqFw=="],
+
     "@fontsource/boogaloo": ["@fontsource/boogaloo@5.3.0", "", {}, "sha512-nFnL1AvihH7+QOpOF0KsJdwsyzVJnJfFwy0XberXHpuc3bJ5tH66fkZOp8ZhJEeLJ22VFFktXq6xWmXnt4atzw=="],
 
     "@fontsource/bowlby-one-sc": ["@fontsource/bowlby-one-sc@5.3.0", "", {}, "sha512-MIotGvS9UrEAGMW5z0ZUMmdho+EsgyqX5lQe2hm4phxmECPQhk8l+S0QWXzEgTji9XCR5tE7eBtqF4GhRNgvuA=="],
+
+    "@fontsource/dela-gothic-one": ["@fontsource/dela-gothic-one@5.3.0", "", {}, "sha512-4A26Qs7TqYFWegJfYHx7KKWy01YybW/e7uhFDM8A8e1neVPm721laLnh0en60wtKihfNdCbJt0VVcEMHC4pHjw=="],
 
     "@fontsource/delicious-handrawn": ["@fontsource/delicious-handrawn@5.3.0", "", {}, "sha512-XeNjkS06KdZbGGLZt+C/XfTbkCg1VeX52d3THKJykrHmsCV8U4lPjWvF2wzEuWVPjl5mrPBOjM2FnKM38j/N0g=="],
 
     "@fontsource/delius-unicase": ["@fontsource/delius-unicase@5.3.0", "", {}, "sha512-8wKpauSi7HRaJHrlZE8Rs7nTVRmcgojZIIMq1S1dxwajuHXpO0BCIYP/JhpFpkCW31NWeR6d30L/ACG5l1EqNQ=="],
 
+    "@fontsource/dseg7-classic": ["@fontsource/dseg7-classic@5.3.0", "", {}, "sha512-Y7JJRPszb1DwL6EEA1QFyL8wev2o0K/Lt/9AR0Y/1/0Z/5+O7p8muJR4OeJr+HrmPoJB/20mF+vMu6WiQxmtmQ=="],
+
+    "@fontsource/hachi-maru-pop": ["@fontsource/hachi-maru-pop@5.3.0", "", {}, "sha512-P46hjUscQPRUr2QpSNxzll6yRSOlbOY4nCo3dGRNd9U0CJ9PRreLm5FOtoPAWJv0dJ9m+5zYf4cbbpTJu3pbXg=="],
+
     "@fontsource/indie-flower": ["@fontsource/indie-flower@5.3.0", "", {}, "sha512-Wo5eN/ruEQcyC3+ArzhlpqWQgph3VuCNbJlEkVw17LUd0uyTHOb9bTec4g9njQzjiL/ijACF27sSwy90L6kZBg=="],
 
     "@fontsource/lilita-one": ["@fontsource/lilita-one@5.3.0", "", {}, "sha512-bNW3tD+m5pOsAQpW/NvtRbFthFe+B73hDJK2DLLCFCtF+1p+UMBgo7ibxdcb9Sftr06LKAVbt080wiMdSqGbOg=="],
+
+    "@fontsource/londrina-solid": ["@fontsource/londrina-solid@5.3.0", "", {}, "sha512-tFmgGjs1jfabUQ1chutoptW31U706uuVsTHVcCvuGKhTGNnwxSkLbfTE6zMgI0IzLJikyG25bVpoMjLGn5NYjQ=="],
 
     "@fontsource/luckiest-guy": ["@fontsource/luckiest-guy@5.3.0", "", {}, "sha512-wCtuVkExxmKeW0FngmKVTcCK9T0elvjoP4/ZZaINqsUjlk9CB17Rr9FQ6pIDlN4nzouDMGSuqYvge3VoKqslPA=="],
 
@@ -336,9 +390,17 @@
 
     "@fontsource/momo-trust-display": ["@fontsource/momo-trust-display@5.3.0", "", {}, "sha512-4FxFAi9LMSGjLHgRZD4Uqb/WWuTuq9vAAzK+i2Ztiplkn57MYYsIX5GaIhQ2YjqwIxflqD1iOpEAZICbDlKjaw=="],
 
+    "@fontsource/monoton": ["@fontsource/monoton@5.3.0", "", {}, "sha512-pXZyTe7Gr6Ow5NhDbmCSMWfpp+qwoQB/615gNSdlU5jEQ9CTUKxbkEjm2CY0dEGbW4gFA204MxdiPKEBQ61tOA=="],
+
+    "@fontsource/opendyslexic": ["@fontsource/opendyslexic@5.3.0", "", {}, "sha512-BVYIW/ghc1U2iAghhYTN+GFWiZ3lnCy8Jf2KkZC23aHQHBNcMqKT718zckfqVxRx4qsXJmIMPWvczirRuhmtsg=="],
+
     "@fontsource/ranchers": ["@fontsource/ranchers@5.3.0", "", {}, "sha512-SDltXXiaDcWBvLW5mGzSP2W1PViQcAgBiG+0Lk0c/RArE+R5tve9YZ4vxL8HNeonEA3hACAYvxzx1lovmWTjjQ=="],
 
+    "@fontsource/rubik-dirt": ["@fontsource/rubik-dirt@5.3.0", "", {}, "sha512-EinXO2ePd/Bcn4k+qwr6q6MC/XGoCRsWJGllkth8SU3GUtJbVLoEF1Y7bpKku1EpcBhR9LDdhW2kJCQb5CcD9Q=="],
+
     "@fontsource/special-elite": ["@fontsource/special-elite@5.3.0", "", {}, "sha512-fOQ9XU8m4KnqzcLibAXCxTsKzbxePNDjPqVss5GSMcPVCY1TuCv+Wq8gm1ebqIR6XS1rhMbQ7ECP9ocKVEEpTA=="],
+
+    "@fontsource/syncopate": ["@fontsource/syncopate@5.3.0", "", {}, "sha512-JnZLv67POkOrQoOJDn+1ZYbA2md6PrN/tqA01d3JZiSUKzWWFHm55CutzfvmggZpiRCS0WnGYsEneKsX7Vpi7Q=="],
 
     "@fontsource/thasadith": ["@fontsource/thasadith@5.3.0", "", {}, "sha512-XqmHnJn1wDerWOiiBRx+oYPZpNViT3oa/48oiN6pv0xrAwh36vH09TyOmmL1GPKVCeEPM3+8XWi8Nu/tXlSdIg=="],
 
@@ -546,7 +608,7 @@
 
     "@tabler/icons": ["@tabler/icons@3.50.0", "", {}, "sha512-HflLxyrH1cqC7s7jzQGSjpsTAVIoaf7+/yHjbdM59rJQBMjliibp+LYhDPFxOMcwa1M8DNpOk6ENzQiWn9a1Dg=="],
 
-    "@tabler/icons-astro": ["@tabler/icons-astro@3.50.0", "", { "dependencies": { "@tabler/icons": "3.50.0" }, "peerDependencies": { "astro": ">=4.0.0" } }, "sha512-x6iqEhbP6x0PEyPJCF120mSRX50o/m7RFjW+5aSrjEI9S3SsQNFk2mDQyENf5BMrs5412MTkGXv76tGU4t30Uw=="],
+    "@tabler/icons-astro": ["@tabler/icons-astro@3.51.0", "", { "dependencies": { "@tabler/icons": "3.51.0" }, "peerDependencies": { "astro": ">=4.0.0" } }, "sha512-v6gbTXHaIkZpO9bP/U9nWs7zYRD8JjPrVmzQk0jZ2CN3xqJjGo2fk+lVsZqXEQheo8Ycn2qYz1I3F4MNrFqv1A=="],
 
     "@tybys/wasm-util": ["@tybys/wasm-util@0.10.4", "", { "dependencies": { "tslib": "^2.4.0" } }, "sha512-W3c4gRigFS0T/Ma4qIYF3GDAc5AQdHb1yL5znJT1Zv1YaD9Kitx656wBjvr19qbiosmZT8lWDM5BEMynUqX65A=="],
 
@@ -1374,6 +1436,8 @@
 
     "@better-auth/oauth-provider/jose": ["jose@6.2.15", "", {}, "sha512-qdF6ewcZARtef63fJ9AKKZPgxw+t7USH6HLXYcD4CrdmSvDp79rpJSPFEKc90QBeGS63u1KQtN2MZQHC0yDIzA=="],
 
+    "@better-auth/telemetry/@better-fetch/fetch": ["@better-fetch/fetch@1.3.3", "", {}, "sha512-U6SlDt/GUWtK2JAxS/NhdoYTEim+EL1G5byz2TUj83KjLZBUpYzb5SmX0aXaCnbGkAjFKnV/o/0+cyXMbEcqqg=="],
+
     "@bruits/satteri-wasm32-wasi/@emnapi/core": ["@emnapi/core@1.11.1", "", { "dependencies": { "@emnapi/wasi-threads": "1.2.2", "tslib": "^2.4.0" } }, "sha512-RSvbQmHzdKzNsLYa/wHrbc3KN4sYLKAdPZxqiM2HATqv/SBk2/ENSHpvXGaLOMcsAyz0poEGqkmmKYG3OWiJEQ=="],
 
     "@bruits/satteri-wasm32-wasi/@napi-rs/wasm-runtime": ["@napi-rs/wasm-runtime@1.2.5", "", { "dependencies": { "@tybys/wasm-util": "^0.10.3" }, "peerDependencies": { "@emnapi/core": "^1.7.1 || ^2.0.0-alpha.4", "@emnapi/runtime": "^1.7.1 || ^2.0.0-alpha.4" } }, "sha512-HshSvXzmBxNzqejd3k/KemgQ3hdREUYFRRrgxOZ+gPljDIsO2SDZrVZMd4Z/HsxudQbE62OVyVFE8z9BCurfjA=="],
@@ -1388,6 +1452,8 @@
 
     "@modelcontextprotocol/sdk/jose": ["jose@6.2.15", "", {}, "sha512-qdF6ewcZARtef63fJ9AKKZPgxw+t7USH6HLXYcD4CrdmSvDp79rpJSPFEKc90QBeGS63u1KQtN2MZQHC0yDIzA=="],
 
+    "@tabler/icons-astro/@tabler/icons": ["@tabler/icons@3.51.0", "", {}, "sha512-0pinvPZz7YeX+OSfxuEAbnEPWbocVXW5iU8h5lh41pYG8sZuQfpWECC980lxOT0clGIcNGn8xsBr+zKaRGdA/g=="],
+
     "@vscode/emmet-helper/jsonc-parser": ["jsonc-parser@2.3.1", "", {}, "sha512-H8jvkz1O50L3dMZCsLqiuB2tA7muqbSg1AtGEkN0leAqGjsUzDJir3Zwr02BhqdcITPg3ei3mZ+HjMocAknhhg=="],
 
     "add-mcp/@clack/prompts": ["@clack/prompts@0.9.1", "", { "dependencies": { "@clack/core": "0.4.1", "picocolors": "^1.0.0", "sisteransi": "^1.0.5" } }, "sha512-JIpyaboYZeWYlyP0H+OoPPxd6nqueG/CmN6ixBiNFsIDHREevjIf0n0Ohh5gr5C8pEDknzgvz+pIJ8dMhzWIeg=="],
@@ -1397,10 +1463,6 @@
     "add-mcp/commander": ["commander@13.1.0", "", {}, "sha512-/rFeCpNJQbhSZjGVwO9RFV3xPqbnERS8MmIQzCtD/zl6gpJuV/bMLuN92oG3F7d8oDEHHRrujSXNUr8fpjntKw=="],
 
     "anymatch/picomatch": ["picomatch@2.3.2", "", {}, "sha512-V7+vQEJ06Z+c5tSye8S+nHUfI51xoXIXjHQ99cQtKUkQqqO1kO/KCJUfZXuB47h/YBlDhah2H3hdUGXn8ie0oA=="],
-
-    "better-auth/@better-auth/core": ["@better-auth/core@1.7.15", "", { "dependencies": { "@standard-schema/spec": "^1.1.0", "zod": "^4.5.4" }, "peerDependencies": { "@better-auth/utils": "^0.4.2 || ^0.5.0", "@better-fetch/fetch": "1.3.3", "@opentelemetry/api": "^1.9.0", "better-call": "1.4.4", "jose": "^6.1.0", "kysely": "^0.28.5 || ^0.29.0", "nanostores": "^1.0.1" }, "optionalPeers": ["@opentelemetry/api"] }, "sha512-BetlCGMINY5GiQocDF9X2wD+9yWrSrAecQbcZUCDqXd2pAolPr15ZrFqYyjEXX6YKUdPPWotUmo8naE4NSyEVQ=="],
-
-    "better-auth/@better-auth/telemetry": ["@better-auth/telemetry@1.7.15", "", { "peerDependencies": { "@better-auth/core": "^1.7.15", "@better-auth/utils": "^0.4.2 || ^0.5.0", "@better-fetch/fetch": "1.3.3" } }, "sha512-qZq491FZNLRCFmBo97DK+wOKfKPcSMeP87BoqH1nWZc0FZi2fbS4vqmwgn9OdQU7LRjHs/757o64iao1vrvkKA=="],
 
     "better-auth/@better-fetch/fetch": ["@better-fetch/fetch@1.3.3", "", {}, "sha512-U6SlDt/GUWtK2JAxS/NhdoYTEim+EL1G5byz2TUj83KjLZBUpYzb5SmX0aXaCnbGkAjFKnV/o/0+cyXMbEcqqg=="],
 

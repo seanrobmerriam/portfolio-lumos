@@ -1,0 +1,38 @@
+---
+title: "What OTP Supervision Trees Teach You About On-Call Rotations"
+description: "Erlang's supervision tree design isn't just a software pattern. Applied to human on-call escalation, it explains why so many escalation policies quietly fail."
+publishDate: 2026-03-03
+tags:
+  - "erlang"
+  - "on-call"
+  - "organizational-design"
+draft: false
+---
+
+## Introduction
+
+I spent a decade thinking of OTP supervision trees as a way to structure software processes. It wasn't until I sat down to redesign our team's on-call escalation policy — a document, not a codebase — that I noticed I was reaching for exactly the same design questions, and that most escalation policies get the same things wrong that a naively designed supervision tree gets wrong.
+
+## The parallel, stated plainly
+
+A supervision tree answers three questions for a crashed process: who is responsible for noticing, what should happen first, and what happens if that first response doesn't work. An on-call escalation policy is answering the exact same three questions for a human who's stuck, except the "process" is a person, the "crash" is an incident, and the "restart" is someone else getting paged. Once you see the structural match, a lot of OTP's hard-won design wisdom transfers directly — and a lot of common escalation-policy mistakes turn out to be the human equivalent of mistakes OTP explicitly warns against.
+
+## Mistake 1: One giant flat supervisor (one big on-call rotation for everything)
+
+A supervisor watching fifty unrelated children with a single restart strategy is a known OTP anti-pattern, because a `one_for_one` supervisor restarting an unrelated child doesn't help, and treating all fifty children identically ignores that they fail for different reasons and need different responses. The equivalent organizational mistake is a single on-call rotation covering every service a team owns, with one escalation path regardless of what broke. A database failover and a stale cache both page the same person, at the same urgency, through the same channel — even though one needs a specific specialist immediately and the other can often wait for business hours. Just as OTP nests supervisors by *what actually needs to restart together*, escalation policies should be structured by *what actually needs the same responder*, not by team org chart convenience.
+
+## Mistake 2: No limit on restart intensity (no limit on page frequency)
+
+OTP supervisors have a **restart intensity** — a maximum number of restarts allowed within a time window, after which the supervisor gives up and escalates the failure upward rather than restarting forever. This exists because a process crash-looping is a signal that restarting isn't the right response anymore; something structural is wrong, and it needs a different kind of intervention.
+
+Very few on-call policies have an equivalent. A flapping alert can page the same person a dozen times in a night with no circuit breaker converting "this keeps failing" into "stop paging this person and escalate to someone who can fix the underlying cause." The result is exactly what you'd expect from a `one_for_one` supervisor with unlimited restart intensity: the on-call engineer functionally crash-loops too, except a human crash-looping at 3 AM doesn't restart clean.
+
+## Mistake 3: Restart strategy that doesn't match the actual dependency
+
+Choosing `one_for_one` when children genuinely depend on each other means restarting Child A alone, while Child B (which was relying on state Child A just reset) keeps running against now-stale assumptions — a subtle bug OTP engineers learn to watch for early. The escalation-policy version: paging only the on-call engineer for the specific alerting service, when the actual incident requires someone from a dependent team to act in a coordinated way at the same time, not sequentially after the first responder has already spent fifteen minutes diagnosing that they need help. Just as `rest_for_one` exists for children with real dependencies, some incidents need simultaneous multi-team paging defined in advance — not a chain of escalations discovered live, under pressure, by whoever's paged first.
+
+## What actually changed when we rewrote our policy this way
+
+We split one flat rotation into three, grouped by actual failure coupling rather than team ownership. We added an explicit restart-intensity equivalent: three pages for the same underlying alert in an hour auto-escalates to a lead, rather than continuing to re-page the same person. And we pre-defined which incident categories require simultaneous multi-team paging instead of sequential escalation discovered mid-incident.
+
+None of this required new tooling. It required treating the escalation policy as a design problem with the same structure as a supervision tree — which, once you notice the parallel, it obviously is.

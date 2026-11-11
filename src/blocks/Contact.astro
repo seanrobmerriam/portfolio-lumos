@@ -1,0 +1,66 @@
+---
+import NoteHandwritten from "@/components/content/NoteHandwritten.astro";
+import Section from "@/components/wrapper/Section.astro";
+import Heading from "@/components/typography/Heading.astro";
+import Paragraph from "@/components/typography/Paragraph.astro";
+import Form from "@/components/form/Form.astro";
+import Fieldset from "@/components/form/Fieldset.astro";
+import Input from "@/components/form/Input.astro";
+import Textarea from "@/components/form/Textarea.astro";
+import ButtonWrapper from "@/components/wrapper/ButtonWrapper.astro";
+import Button from "@/components/Button.astro";
+import Grid from "@/components/wrapper/Grid.astro";
+import Modal from "@/components/interactive/Modal.astro";
+import { NEON_FUNCTION_CONTACT_BASE_URL } from "astro:env/server";
+import ContentWrapper from "@/components/wrapper/ContentWrapper.astro";
+
+const sectionLabelClass =
+  "drop-shadow-text background-yellow angled-text-right-1 emphasis font-quicksand padding-inline-2 padding-block-3 margin-top-3 text-wrap-nowrap";
+---
+  <Section id="contact" fullHeight={true}>
+    <ContentWrapper
+    variant="columns"
+    >
+    <Heading tag="h2" class={sectionLabelClass}>
+      let’s talk
+    </Heading>
+    <Paragraph variant="h4" class="font-figtree margin-block-4">
+      Have something in mind? Let’s work out what it needs.
+    </Paragraph>
+    <Paragraph maxWidth={50} class="margin-block-4">
+      Tell me what you’re building, what’s getting in the way and any timing
+      you’re working toward. Links and rough ideas are welcome.
+    </Paragraph>
+    <NoteHandwritten slot="column2" variant="margin" text="No perfect brief needed. Your site URL and a few thoughts are enough." />
+    <Form
+      name="contact"
+      action={NEON_FUNCTION_CONTACT_BASE_URL}
+      class="width-full"
+    >
+      <Fieldset legend="Your details" legendStyle="hidden">
+        <Grid medium={2}>
+          <Input variant="first-name" name="first_name" required />
+          <Input variant="last-name" name="last_name" required />
+        </Grid>
+        <Input
+          variant="email"
+          name="email"
+          label="Your email"
+          placeholder="you@company.com"
+          required
+        />
+        <Textarea
+          label="About your project"
+          name="message"
+          placeholder="What are you working on, and where could I help?"
+          required
+        />
+      </Fieldset>
+      <ButtonWrapper marginTop="1">
+        <Button class="background-yellow emphasis="primary" element="button" type="submit" label="submit">Send your message</Button>
+      </ButtonWrapper>
+    </Form>
+    </ContentWrapper>
+  </Section>
+
+

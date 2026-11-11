@@ -1,0 +1,92 @@
+---
+title: "Trait Objects vs Generics for a Pluggable Storage Backend"
+description: "Rust gives you two ways to make a storage layer swappable: generics or trait objects. The real trade-off isn't performance — it's where complexity ends up living."
+publishDate: 2025-09-08
+tags:
+  - "rust"
+  - "api-design"
+  - "traits"
+draft: false
+---
+
+## Introduction
+
+Every Rust performance guide will tell you generics-with-monomorphization beat `dyn Trait` for raw throughput, and that's true, and it was almost entirely irrelevant to the actual decision I had to make building Postbox's storage layer. The `MailboxStore` trait needed to support both an in-memory fake for tests and a real SQLite-backed implementation, and the interesting trade-off wasn't performance — it was where the resulting complexity would end up living.
+
+## The two shapes of the same trait
+
+Generic, monomorphized version:
+
+```rust
+pub struct Broker<S: MailboxStore> {
+    store: S,
+}
+
+impl<S: MailboxStore> Broker<S> {
+    pub async fn enqueue(&self, msg: Message) -> Result<()> {
+        self.store.insert(msg).await
+    }
+}
+```
+
+Trait object version:
+
+```rust
+pub struct Broker {
+    store: Box<dyn MailboxStore>,
+}
+
+impl Broker {
+    pub async fn enqueue(&self, msg: Message) -> Result<()> {
+        self.store.insert(msg).await
+    }
+}
+```
+
+Both compile, both work, and for a first pass they look almost interchangeable. The difference shows up once the codebase grows around them.
+
+## Where the generic version pushed complexity
+
+The generic `Broker<S>` looks clean in isolation, but every type that *holds* a `Broker` inherits the type parameter, and every type that holds *that* type inherits it too. In practice:
+
+```rust
+pub struct AgentRuntime<S: MailboxStore> {
+    broker: Broker<S>,
+    // ...
+}
+
+pub struct Supervisor<S: MailboxStore> {
+    runtimes: Vec<AgentRuntime<S>>,
+    // ...
+}
+```
+
+This is the well-known "generic parameter infection" pattern — the type parameter has to thread through every layer that touches the broker, even layers with no actual interest in which storage backend is in use. Worse, it made writing tests genuinely awkward: a test harness wanting to run the same integration test against both the in-memory fake and the real SQLite store either needed to be generic itself (pushing the same infection into test code) or needed a macro to generate the same test twice for each concrete type.
+
+## Where the trait object version pushed complexity instead
+
+`Box<dyn MailboxStore>` erases the concrete type at the `Broker` boundary, so nothing above `Broker` needs to know or care which storage backend is running underneath:
+
+```rust
+pub struct AgentRuntime {
+    broker: Broker, // no type parameter, ever
+}
+```
+
+The cost shows up differently: every call through the trait object is a dynamic dispatch (a small, usually irrelevant runtime cost for this workload), and — the part that actually mattered — the trait itself has to be object-safe, which meant no generic methods on `MailboxStore` and careful handling of `async fn` in traits, which as of writing still needs `async_trait` or a hand-rolled boxed-future return to be object-safe cleanly:
+
+```rust
+#[async_trait]
+pub trait MailboxStore: Send + Sync {
+    async fn insert(&self, msg: Message) -> Result<()>;
+    async fn claim(&self, agent_id: &str) -> Result<Option<Message>>;
+}
+```
+
+## The actual decision
+
+I chose `dyn Trait`, and the reason wasn't a performance argument at all — dispatch overhead here is nowhere near the bottleneck in a system dominated by database I/O. The reason was that `Broker` sits at a layer boundary crossed by many unrelated higher-level components (the gRPC service, the MCP tool layer, the sweeper task), and none of them have any business knowing or caring which storage backend is active. Pushing that complexity down into a single object-safe trait definition, paid once, was clearly better than pushing generic-parameter infection out into every consumer of `Broker`, paid repeatedly at every call site.
+
+## The generalizable rule
+
+This isn't "trait objects are better" as a universal claim — generics are the right call when a type is genuinely performance-critical and used in a small, contained part of the codebase, or when you need the trait's methods to be generic themselves. The actual question worth asking is: how many layers sit between this trait and the code that constructs the concrete type? The more layers, the more a generic parameter's infection cost compounds, and the more a `dyn Trait`'s one-time object-safety cost looks cheap by comparison.

@@ -1,0 +1,78 @@
+---
+title: "Dead Letter Queues Are a UX Problem, Not Just an Error-Handling One"
+description: "Most dead-letter-queue implementations treat DLQs as a place errors go to die. Rebuilding one in Rust around the person who has to read it changed the design entirely."
+publishDate: 2025-11-19
+tags:
+  - "rust"
+  - "messaging"
+  - "error-handling"
+draft: false
+---
+
+## Introduction
+
+The first version of Postbox's dead-letter queue did exactly what most DLQ implementations do: when a message exceeded its retry limit, move it to a separate table, record the last error, done. Technically correct, and nearly useless in practice — I built it, used it for two months, and realized I almost never actually looked at it, because reading it told me almost nothing actionable. The fix wasn't a better retry policy. It was realizing a DLQ is fundamentally a UX surface for a human trying to answer "why did this fail and what do I do about it," and designing it as an error-handling mechanism alone misses that entirely.
+
+## What the first version got wrong
+
+The original schema recorded the bare minimum:
+
+```rust
+pub struct DeadLetter {
+    pub message_id: Uuid,
+    pub last_error: String,
+    pub failed_at: DateTime<Utc>,
+    pub retry_count: u32,
+}
+```
+
+This answers "what was the most recent error" but not the questions that actually matter when you're staring at a growing dead-letter table trying to decide what to do: was this one bad message, or a whole category of messages hitting the same failure? Is this consumer-side (the message is fine, my handler has a bug) or producer-side (the message itself is malformed)? Has this exact failure happened before, and if so, how was it resolved last time?
+
+## What the redesign actually captured
+
+```rust
+pub struct DeadLetter {
+    pub message_id: Uuid,
+    pub payload_fingerprint: String,       // hash of message shape, not content
+    pub error_history: Vec<FailureRecord>, // every attempt, not just the last
+    pub failure_category: FailureCategory, // classified, not just a string
+    pub similar_failures_last_24h: u32,    // computed at write time
+}
+
+#[derive(Debug, Clone)]
+pub enum FailureCategory {
+    ConsumerPanic,
+    SchemaValidationFailed,
+    DownstreamTimeout,
+    Unknown(String),
+}
+
+pub struct FailureRecord {
+    pub attempt: u32,
+    pub error: String,
+    pub occurred_at: DateTime<Utc>,
+}
+```
+
+Two changes did most of the work. First, `error_history` instead of a single `last_error` — a message that failed the same way three times in a row tells a completely different story than one that failed three *different* ways, and the single-error version couldn't distinguish them. Second, `failure_category` as a classified enum computed at write time, not left for whoever reads the DLQ later to figure out by parsing error strings by hand.
+
+```rust
+fn classify_failure(err: &ProcessingError) -> FailureCategory {
+    match err {
+        ProcessingError::Panic(_) => FailureCategory::ConsumerPanic,
+        ProcessingError::SchemaInvalid(_) => FailureCategory::SchemaValidationFailed,
+        ProcessingError::Timeout { .. } => FailureCategory::DownstreamTimeout,
+        other => FailureCategory::Unknown(other.to_string()),
+    }
+}
+```
+
+`similar_failures_last_24h` was the single highest-value field added, computed with a lightweight query against `payload_fingerprint` at write time. A dead letter that's the first of its kind in a day gets read differently than the two-hundredth instance of the same fingerprint — the former might genuinely need individual attention, the latter is very likely one root cause producing a flood, and burying that signal in a flat list of two hundred nearly-identical rows is how a flood goes unnoticed for hours.
+
+## What changed once this shipped
+
+The practical difference showed up the first week: a schema change in an upstream service produced a burst of `SchemaValidationFailed` dead letters, all sharing a `payload_fingerprint`, all showing `similar_failures_last_24h` climbing fast. Under the old schema this would have looked like two hundred separate, individually forgettable rows. Under the new one, it was immediately legible as one root cause, and the fix (rolling back the upstream schema change) took minutes instead of the hour or more it would have taken to manually notice the pattern by eyeballing raw error strings.
+
+## The generalizable point
+
+A dead letter queue's schema is a UX decision as much as a data-modeling one, because its entire purpose is being read by a person under some amount of time pressure, trying to decide what to do next. Designing it around "what data do I have available to record" produces a technically complete but practically unreadable log. Designing it around "what would someone need to see to act in the next thirty seconds" produces something closer to what a DLQ is actually for.

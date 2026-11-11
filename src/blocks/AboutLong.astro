@@ -1,0 +1,456 @@
+---
+import type { ComponentProps, HTMLAttributes } from "astro/types";
+import Section from "@/components/wrapper/Section.astro";
+import Heading from "@/components/typography/Heading.astro";
+import ContentWrapper from "@/components/wrapper/ContentWrapper.astro";
+
+type ArticleBlock =
+  | { type: "paragraph" | "heading"; text: string }
+  | { type: "list"; ordered: boolean; items: { lead: string; text: string }[] }
+  | { type: "photo"; src: string; alt: string; caption: string }
+  | {
+      type: "quote";
+      text: string;
+      portrait: string;
+      name: string;
+      role: string;
+    }
+  | {
+      type: "link-paragraph";
+      before: string;
+      label: string;
+      href: string;
+      after: string;
+    };
+
+type Props = Pick<
+  ComponentProps<typeof Section>,
+  "render" | "theme" | "paddingTop" | "paddingBottom"
+> &
+  HTMLAttributes<"section"> & {
+    /** Eyebrow text. */
+    eyebrow?: string;
+    /** Article title. */
+    heading?: string;
+    /** Article summary. */
+    summary?: string;
+    /** Author name. */
+    authorName?: string;
+    /** Author role and company. */
+    authorRole?: string;
+    /** Author portrait URL. */
+    authorPortrait?: string;
+    /** Machine-readable publication date. */
+    dateTime?: string;
+    /** Displayed publication date. */
+    dateLabel?: string;
+    /** Estimated reading time. */
+    readingTime?: string;
+    /** Article paragraphs, headings, lists, photos and quotes in reading order. */
+    content?: ArticleBlock[];
+  };
+const defaultContent: ArticleBlock[] = [
+  {
+    type: "paragraph",
+    text: "When we announced the four-day week, the most common reaction from customers was a worried email asking who would answer the phone on Fridays. The reaction inside the company was quieter: people wanted to know which work would stop.",
+  },
+  {
+    type: "paragraph",
+    text: "Both were fair questions. Northwind makes route-planning software for 1,900 delivery companies across Europe, and their drivers do not take Fridays off. So before we changed anything, every team wrote down the three numbers it would protect, and we agreed to go back to five days if any of them slipped for two months in a row.",
+  },
+  {
+    type: "heading",
+    text: "LLM Integrations",
+  },
+  {
+    type: "paragraph",
+    text: "The rules fitted on one page, and we have changed only one of them since:",
+  },
+  {
+    type: "list",
+    ordered: false,
+    items: [
+      {
+        lead: "Fridays off for everyone, on the same salary.",
+        text: " Support and on-call engineers work a rota, so customers still reach a person seven days a week.",
+      },
+      {
+        lead: "Meetings end after 25 minutes,",
+        text: " and none are booked on Tuesday or Thursday mornings.",
+      },
+      {
+        lead: "Status updates are written, not spoken.",
+        text: " Every team posts one on Monday morning, and the Monday meeting is gone.",
+      },
+    ],
+  },
+  {
+    type: "photo",
+    src: "https://readymadeui.com/team-image.webp",
+    alt: "Four colleagues laughing together around a desk with a laptop, papers and a small plant",
+    caption:
+      "The route-planning team in our Hamburg office on a Thursday, which turned out to be the busiest day of the week.",
+  },
+  {
+    type: "heading",
+    text: "What the numbers say",
+  },
+  {
+    type: "paragraph",
+    text: "All three numbers held. Revenue grew 23% over the year, against the 25% we had planned before the change. The median time to a first reply in support fell from 2 hours 10 minutes to 1 hour 45 minutes. And 3 people chose to leave, down from 11 the year before.",
+  },
+  {
+    type: "paragraph",
+    text: "The number we did not plan for was sick days, which fell by almost a third. We think people stopped needing them as the only way to get a long weekend.",
+  },
+  {
+    type: "quote",
+    text: "“The first month was rough. By the third, Thursday afternoon had become the most focused four hours of my week.”",
+    portrait: "https://readymadeui.com/team-1.webp",
+    name: "Jonas Becker",
+    role: "Engineering Lead, Northwind",
+  },
+  {
+    type: "heading",
+    text: "What broke",
+  },
+  {
+    type: "paragraph",
+    text: "Not everything worked. Three things went wrong in the first quarter, and each one took a change to fix:",
+  },
+  {
+    type: "list",
+    ordered: true,
+    items: [
+      {
+        lead: "Thursday became the new Friday.",
+        text: " Releases piled up on Thursday afternoons, so we moved them to Wednesdays.",
+      },
+      {
+        lead: "Sales felt it most.",
+        text: " Customers in the Nordics expect calls on Fridays, so the sales team takes Mondays off instead.",
+      },
+      {
+        lead: "Weekend support needed its own plan.",
+        text: " The Lisbon team covers Saturdays, so they pick their day off each week from a shared rota.",
+      },
+    ],
+  },
+  {
+    type: "heading",
+    text: "Would we do it again?",
+  },
+  {
+    type: "link-paragraph",
+    before:
+      "Yes, and we have made it permanent. It is no longer a perk we could take away in a bad quarter; it is how we plan the work. If you are thinking about trying it, ",
+    label: "read the full report",
+    href: "#",
+    after: ", with the survey questions and every team’s numbers.",
+  },
+];
+const {
+  render = true,
+  eyebrow = "Sean Merriam",
+  heading = "About Me",
+  summary = "In October 2025 all 84 of us stopped working on Fridays, on the same pay. We kept the three numbers we promised to protect. This is what went well, what broke, and what we would do differently.",
+  authorName = "Lena Fischer",
+  authorRole = "COO, Northwind",
+  authorPortrait = "https://readymadeui.com/team-3.webp",
+  dateTime = "2026-10-14",
+  dateLabel = "Oct 14, 2026",
+  readingTime = "9 min read",
+  content = defaultContent,
+  theme = "inherit",
+  paddingTop = "medium",
+  paddingBottom = "medium",
+  id = `long-form-article-${crypto.randomUUID()}`,
+  class: className,
+  ...rest
+} = Astro.props;
+---
+
+<Section
+  render={render && !!heading.trim() && content.length > 0}
+  {theme}
+  {paddingTop}
+  {paddingBottom}
+  {id}
+  class={className}
+  aria-labelledby={`${id}-title`}
+  {...rest}
+>
+<ContentWrapper variant="columns">
+  <article class="long-form-article_wrap">
+    <header>
+      {eyebrow.trim() && <p class="long-form-article_eyebrow">{eyebrow}</p>}
+      <Heading tag="h2" variant="h2" id={`${id}-title`}>
+        {heading}
+      </Heading>
+      {summary.trim() && (
+        <p class="long-form-article_summary text-style-large">{summary}</p>
+      )}
+      <div class="long-form-article_byline">
+        {authorPortrait && (
+          <img
+            class="long-form-article_portrait"
+            src={authorPortrait}
+            alt=""
+            width="40"
+            height="40"
+            loading="lazy"
+            decoding="async"
+          />
+        )}
+        <div class="long-form-article_author">
+          <p class="long-form-article_name">{authorName}</p>
+          <p>{authorRole}</p>
+        </div>
+        <div class="long-form-article_date">
+          <p>
+            <time datetime={dateTime}>{dateLabel}</time>
+          </p>
+          <p>{readingTime}</p>
+        </div>
+      </div>
+    </header>
+    <div class="long-form-article_body">
+      {content.map((block) => {
+        if (block.type === "paragraph")
+          return <p class="long-form-article_paragraph">{block.text}</p>;
+        if (block.type === "heading")
+          return (
+            <h3 class="long-form-article_heading text-style-h5">
+              {block.text}
+            </h3>
+          );
+        if (block.type === "list") {
+          const List = block.ordered ? "ol" : "ul";
+          return (
+            <List class="long-form-article_list">
+              {block.items.map((item) => (
+                <li>
+                  <strong>{item.lead}</strong>
+                  {item.text}
+                </li>
+              ))}
+            </List>
+          );
+        }
+        if (block.type === "photo")
+          return (
+            <figure class="long-form-article_photo">
+              <div class="long-form-article_image-box">
+                <img
+                  class="long-form-article_image"
+                  src={block.src}
+                  alt={block.alt}
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              {block.caption && (
+                <figcaption class="long-form-article_caption">
+                  {block.caption}
+                </figcaption>
+              )}
+            </figure>
+          );
+        if (block.type === "quote")
+          return (
+            <figure class="long-form-article_quote">
+              <blockquote class="long-form-article_quotation text-style-large">
+                <p>{block.text}</p>
+              </blockquote>
+              <figcaption class="long-form-article_speaker">
+                {block.portrait && (
+                  <img
+                    class="long-form-article_portrait"
+                    src={block.portrait}
+                    alt=""
+                    width="40"
+                    height="40"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                )}
+                <span>
+                  <span class="long-form-article_name">{block.name}</span>
+                  {block.role}
+                </span>
+              </figcaption>
+            </figure>
+          );
+        if (block.type === "link-paragraph")
+          return (
+            <p class="long-form-article_paragraph">
+              {block.before}
+              <a class="long-form-article_link" href={block.href}>
+                {block.label}
+              </a>
+              {block.after}
+            </p>
+          );
+      })}
+    </div>
+  </article>
+  </ContentWrapper>
+</Section>
+
+<style is:global>
+  @layer components {
+    .long-form-article_wrap {
+      width: 100%;
+      max-width: 60ch;
+      margin-inline: auto;
+      color: var(--text);
+      font-size: var(--text-main);
+      line-height: var(--text-main-line-height);
+      @media (width >= 30rem) {
+        font-size: var(--text-large);
+      }
+      @media (width >= 64rem) {
+        & .long-form-article_photo {
+          margin-inline: calc(-1 * var(--space-7));
+        }
+      }
+    }
+    .long-form-article_eyebrow {
+      margin: 0;
+      color: var(--text-2);
+      font-family: ui-monospace, monospace;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+    }
+    .long-form-article_summary {
+      color: var(--text-2);
+      margin: var(--space-5) 0 0;
+    }
+    .long-form-article_byline {
+      color: var(--text-2);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-3);
+      margin-top: var(--space-5);
+      padding-block: var(--space-3);
+      border-block: var(--border-width) solid var(--border);
+      font-size: var(--text-small);
+      & p {
+        margin: 0;
+        text-box: normal;
+        line-height: var(--line-height-huge);
+      }
+    }
+    .long-form-article_portrait {
+      width: 2.5rem;
+      height: 2.5rem;
+      flex-shrink: 0;
+      border-radius: var(--radius-round);
+      background: var(--background-2);
+      object-fit: cover;
+    }
+    .long-form-article_author {
+      min-width: 0;
+    }
+    .long-form-article_name {
+      display: block;
+      color: var(--text);
+      font-weight: var(--primary-medium);
+    }
+    .long-form-article_date {
+      margin-inline-start: auto;
+      text-align: end;
+    }
+    .long-form-article_body {
+      color: var(--text-2);
+      margin-top: var(--space-6);
+    }
+    .long-form-article_paragraph {
+      margin: var(--space-5) 0 0;
+    }
+    .long-form-article_heading {
+      margin: var(--space-7) 0 0;
+      color: var(--text);
+      & + .long-form-article_paragraph {
+        margin-top: var(--space-3);
+      }
+    }
+    .long-form-article_list {
+      margin: var(--space-5) 0 0;
+      padding-inline-start: 1.25em;
+      list-style-position: outside;
+      & li + li {
+        margin-top: var(--space-3);
+      }
+      & strong {
+        color: var(--text);
+        font-weight: var(--primary-medium);
+      }
+      & li::marker {
+        color: var(--text-2);
+      }
+      &:is(ul) {
+        list-style-type: disc;
+      }
+      &:is(ol) {
+        list-style-type: decimal;
+        & li::marker {
+          color: var(--text);
+          font-weight: var(--primary-medium);
+        }
+      }
+    }
+    .long-form-article_photo {
+      margin: var(--space-7) 0 0;
+    }
+    .long-form-article_image-box {
+      aspect-ratio: 3 / 2;
+      overflow: hidden;
+      border-radius: var(--radius-main);
+      background: var(--background-2);
+    }
+    .long-form-article_image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .long-form-article_caption {
+      margin-top: var(--space-3);
+      font-size: var(--text-small);
+    }
+    .long-form-article_quote {
+      margin: var(--space-6) 0 0;
+      padding-inline-start: var(--space-4);
+      border-inline-start: calc(var(--border-width) * 2) solid var(--text);
+    }
+    .long-form-article_quotation {
+      margin: 0;
+      color: var(--text);
+      font-weight: var(--primary-medium);
+      & p {
+        margin: 0;
+      }
+    }
+    .long-form-article_speaker {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin-top: var(--space-4);
+      font-size: var(--text-small);
+    }
+    .long-form-article_link {
+      color: var(--link-text);
+      font-weight: var(--primary-medium);
+      text-decoration: underline;
+      text-decoration-color: var(--link-border);
+      text-underline-offset: 0.25em;
+      border-radius: var(--radius-small);
+      &:hover {
+        color: var(--link-text-hover);
+        text-decoration-color: var(--link-border-hover);
+      }
+    }
+  }
+</style>

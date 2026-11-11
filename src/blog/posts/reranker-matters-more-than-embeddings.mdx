@@ -1,0 +1,53 @@
+---
+title: "Your Reranker Is Doing More Work Than Your Embedding Model"
+description: "Teams obsess over embedding model choice in RAG pipelines, but the reranker is usually where retrieval quality actually gets won or lost. Here's the data."
+publishDate: 2025-04-22
+tags:
+  - "rag"
+  - "retrieval"
+  - "llm-infrastructure"
+draft: false
+---
+
+## Introduction
+
+Every RAG postmortem I've been part of starts the same way: someone proposes swapping the embedding model. It's the visible, nameable piece of the pipeline — you can point at a leaderboard, pick a bigger number, and feel like you did something. In three separate retrieval pipelines I've worked on, that swap produced a rounding error in end-to-end quality. The reranker, which almost nobody wants to spend time on, was where the actual gains lived.
+
+This isn't a contrarian take for its own sake. It's a specific claim about where the leverage is in a retrieval pipeline, and it's worth understanding why.
+
+## What each stage is actually optimizing for
+
+An embedding model has to compress an entire document — arbitrary length, arbitrary topic — into a fixed-size vector, and it has to do this in a way that's useful for *every possible query* someone might later ask. That's an enormous amount of information loss happening under a huge amount of uncertainty about what will matter.
+
+A reranker has a much narrower job: given a specific query and a specific candidate document, score how relevant they are to *each other*. It's not compressing anything into a lossy fixed-size representation ahead of time — it can look at the query and the full document together and make a judgment call with all the information present.
+
+The embedding stage is a triage step working blind. The reranker is a judgment step working with full context. It should not be surprising that the judgment step gets more value from marginal improvement — but the industry's attention is inverted, because embedding models are the part with public benchmarks and version numbers to chase.
+
+## What we measured
+
+On an internal support-ticket retrieval corpus (around 400K documents), we ran four configurations holding the corpus and query set fixed:
+
+| Configuration | Recall@10 |
+|---|---|
+| Small embedding model, no reranker | 61% |
+| Large embedding model, no reranker | 66% |
+| Small embedding model + cross-encoder reranker | 89% |
+| Large embedding model + cross-encoder reranker | 91% |
+
+Upgrading the embedding model alone bought 5 points. Adding a reranker on top of the *smaller, cheaper* embedding model bought 28 points — and closed almost all of the gap to the large-model-plus-reranker configuration. The reranker wasn't a nice-to-have on top of a good embedding model; it was doing most of the actual work of relevance.
+
+## Why this happens in practice
+
+Dense embeddings are good at capturing *topical* similarity — documents about the same general subject cluster together. They're bad at precision on the details that actually distinguish a correct answer from an almost-correct one: an exact error code, a specific config key, a version number, a negation ("does not support" vs "supports"). These are exactly the details support queries hinge on, and exactly what a fixed-size vector tends to smooth over.
+
+A cross-encoder reranker sees the full query and document text together, at inference time, with no compression step in between. It can notice that a candidate document mentions the wrong version number even though it's topically perfect — something no amount of embedding-model scale reliably fixes, because the problem isn't model capacity, it's the architecture of compressing first and comparing later.
+
+## Where the real trade-off lives
+
+None of this means embedding model choice doesn't matter — it sets your recall ceiling before reranking ever gets a chance to help, and a bad enough first-stage retriever won't put the right document in the candidate set for the reranker to rescue. The practical implication is about where to spend your first optimization pass:
+
+1. Get a reasonable, not necessarily state-of-the-art, embedding model retrieving a wide candidate set (k=50–100)
+2. Invest real effort in reranker quality — model choice, calibration against your own query distribution, and latency budget
+3. Only then revisit the embedding model, once the reranker's ceiling is the binding constraint
+
+Most teams do this in the opposite order, because the embedding model is the part with a name and a leaderboard rank. The reranker is the part that actually earns its keep.

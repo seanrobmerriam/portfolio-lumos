@@ -1,0 +1,162 @@
+---
+title: "Tutorial: A Circuit Breaker Built Specifically for LLM Tool Calls"
+description: "Generic circuit breakers trip on HTTP errors. LLM tool calls fail differently — this tutorial builds a breaker in Go that accounts for timeouts, rate limits, and malformed output."
+publishDate: 2025-09-14
+tags:
+  - "go"
+  - "tutorial"
+  - "llm-tooling"
+draft: false
+---
+
+## Introduction
+
+Most circuit breaker tutorials trip on one signal: did the HTTP call return an error. That's a reasonable model for a REST dependency. It's the wrong model for an LLM provider, where the failure modes that actually hurt you are timeouts under load, rate-limit responses that aren't really failures at all, and — the one generic breakers can't see — a 200 response containing output your tool-calling layer can't parse. This tutorial builds a breaker that treats all three as distinct signals, in about 90 lines of Go.
+
+## Step 1: Define what "failure" means for this domain
+
+Before writing any breaker logic, separate your failure types. Lumping them together is the single most common mistake:
+
+```go
+type CallOutcome int
+
+const (
+	Success CallOutcome = iota
+	Timeout
+	RateLimited
+	MalformedOutput
+	ProviderError
+)
+```
+
+`RateLimited` matters because it shouldn't count toward tripping the breaker the same way `ProviderError` does — a 429 tells you the provider is healthy but you're going too fast, which calls for backoff, not for treating the provider as down. `MalformedOutput` matters because it's specific to LLM calls: the HTTP layer sees a perfectly successful 200, but your JSON schema validation on the tool call fails. A breaker that only watches HTTP status codes is structurally blind to this.
+
+## Step 2: Track a rolling window per outcome type
+
+```go
+type breakerState struct {
+	mu             sync.Mutex
+	window         []CallOutcome
+	windowSize     int
+	failureRatio   float64
+	state          string // "closed", "open", "half-open"
+	openedAt       time.Time
+	resetAfter     time.Duration
+}
+
+func (b *breakerState) record(outcome CallOutcome) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	b.window = append(b.window, outcome)
+	if len(b.window) > b.windowSize {
+		b.window = b.window[1:]
+	}
+
+	if b.shouldTrip() {
+		b.state = "open"
+		b.openedAt = time.Now()
+	}
+}
+
+func (b *breakerState) shouldTrip() bool {
+	if len(b.window) < b.windowSize {
+		return false
+	}
+	var weighted float64
+	for _, o := range b.window {
+		switch o {
+		case Timeout, MalformedOutput, ProviderError:
+			weighted++
+		case RateLimited:
+			weighted += 0.25 // counts, but much less
+		}
+	}
+	return weighted/float64(b.windowSize) >= b.failureRatio
+}
+```
+
+The weighting is the key design choice: rate limits contribute a quarter as much signal as a real provider error or a malformed output, because being rate-limited a lot means "we're sending too much traffic," not "the provider is down." Tripping the breaker on rate limits alone would just make a self-inflicted problem worse by killing traffic to a provider that's actually working fine.
+
+## Step 3: Wire it around the actual tool call
+
+```go
+func (b *breakerState) Execute(ctx context.Context, call func(context.Context) (string, error)) (string, error) {
+	b.mu.Lock()
+	if b.state == "open" {
+		if time.Since(b.openedAt) > b.resetAfter {
+			b.state = "half-open"
+		} else {
+			b.mu.Unlock()
+			return "", ErrBreakerOpen
+		}
+	}
+	b.mu.Unlock()
+
+	ctx, cancel := context.WithTimeout(ctx, 8*time.Second)
+	defer cancel()
+
+	result, err := call(ctx)
+	outcome := classify(result, err)
+	b.record(outcome)
+
+	if outcome == Success && b.state == "half-open" {
+		b.mu.Lock()
+		b.state = "closed"
+		b.window = nil
+		b.mu.Unlock()
+	}
+
+	if outcome != Success {
+		return "", fmt.Errorf("tool call failed: %s", outcome)
+	}
+	return result, nil
+}
+
+func classify(result string, err error) CallOutcome {
+	if errors.Is(err, context.DeadlineExceeded) {
+		return Timeout
+	}
+	var rl *rateLimitError
+	if errors.As(err, &rl) {
+		return RateLimited
+	}
+	if err != nil {
+		return ProviderError
+	}
+	if !json.Valid([]byte(result)) || !matchesToolSchema(result) {
+		return MalformedOutput
+	}
+	return Success
+}
+```
+
+## Step 4: Test the case generic tutorials skip
+
+The part worth actually testing isn't "does it open on repeated errors" — every circuit breaker tutorial covers that. Test that a burst of rate limits *alone* does not open the breaker, while a much smaller number of malformed-output responses does:
+
+```go
+func TestRateLimitsAloneDoNotTrip(t *testing.T) {
+	b := newBreaker(windowSize(10), failureRatio(0.5))
+	for i := 0; i < 10; i++ {
+		b.record(RateLimited)
+	}
+	if b.state == "open" {
+		t.Fatal("breaker should not open on rate limits alone")
+	}
+}
+
+func TestMalformedOutputTripsFasterThanRateLimit(t *testing.T) {
+	b := newBreaker(windowSize(10), failureRatio(0.5))
+	for i := 0; i < 6; i++ {
+		b.record(MalformedOutput)
+	}
+	if b.state != "open" {
+		t.Fatal("breaker should have opened on repeated malformed output")
+	}
+}
+```
+
+## Where this goes from here
+
+The breaker above is deliberately minimal — no jitter on the half-open probe, no per-tool breaker instances, no distributed state sharing across replicas. In production you'll want at least the second one: a single breaker per tool endpoint, not one global breaker for every tool an agent might call, since a broken web-search tool shouldn't trip the breaker guarding your database-query tool. The classification step is the part worth spending your design time on — get the outcome taxonomy right for your own provider's specific failure modes, and the breaker logic around it stays this simple.

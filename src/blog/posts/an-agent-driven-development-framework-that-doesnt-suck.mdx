@@ -1,0 +1,51 @@
+---
+title: "Spec Theater: Why the New Wave of 'Spec-Driven Development' Frameworks Get It Backwards"
+description: "Spec driven development frameworks are mostly terrible. This one is for actual engineers to use, not vibe coders"
+publishDate: 2026-07-23
+tags:
+  - "specifications"
+  - "design-documents"
+  - "agent-driven"
+draft: false
+---
+
+# Spec Theater: Why the New Wave of "Spec-Driven Development" Frameworks Get It Backwards
+
+There are now more than thirty frameworks competing to sell you the same three-step pitch: write a spec, generate a plan, let an agent implement it. GitHub's Spec Kit. AWS Kiro. OpenSpec, which racked up 52,000+ GitHub stars in under a year. BMAD-METHOD. Tessl. Google Antigravity. Cursor's flavor. Claude Code's flavor. Every vendor with an agentic IDE has shipped its own dialect of the same idea, usually with its own directory convention and its own opinion about whether a "spec" is `requirements.md`, `spec.yaml`, or a folder called `changes/` with a state machine bolted on.
+
+The pitch is seductive because it's aimed at a real wound: vibe coding. You prompt, the agent produces something plausible-looking, it drifts from what you meant, and three files later nobody — human or model — remembers what the intent even was. GitHub said it plainly when they shipped Spec Kit: models are exceptional at pattern completion, lousy at mind reading. So the fix, as sold, is to stop improvising and write it down first.
+
+Great. Writing things down first is not a new idea. It's also not what these tools are actually doing, and that gap is the whole problem.
+
+## The spec is not enforced, it's suggested
+
+Here's the part the marketing glosses over: a markdown file is not a contract. It's prose. When you hand an agent a `requirements.md` and a `tasks.md` and tell it to implement against them, you are trusting the model to *read comprehension* its way into compliance — the same trust exercise as vibe coding, just with more homework beforehand. Sibylline Software put it about as well as anyone has: imagine an architect handing a contractor blueprints that are treated as suggestions, followed maybe 70% of the time. Nobody's building gets built. We tolerate it in software because the cost of "close enough" has always been lower than the cost of formal verification — so we bang our heads against the wall repeatedly and call it engineering.
+
+Spec-driven development, as currently packaged, doesn't close that gap. It just adds a planning phase in front of the same unenforced trust exercise. That's not rigor, that's theater with better production values — a phase-gated ceremony that *looks* like it should catch drift, right up until the agent quietly implements 70% of it and everyone signs off because the diff looked reasonable.
+
+## It's waterfall, and the tell is in the assumption
+
+Kent Beck's critique of this whole category, relayed through Martin Fowler in January, is the sharpest version of the objection: the descriptions of spec-driven development he'd seen all assumed you write the entire spec before implementation begins, which encodes what he called "the (to me bizarre) assumption" that you won't learn anything while building the thing that would change what you specified.
+
+That assumption is not a minor implementation detail — it's the whole failure mode. Every engineer who has shipped anything nontrivial knows the spec is wrong the moment it meets reality, and the value isn't in having predicted correctly, it's in how fast you can update once you learn you didn't. TDD and BDD get grandfathered into "agile" specifically because the feedback loop is measured in seconds — a failing test tells you you're wrong before you've built very much on top of the wrong assumption. Front-loading a 40-page requirements doc, then handing it to an agent for autonomous multi-hour execution, reintroduces exactly the feedback latency that iterative methodology spent twenty-five years training out of us. Calling it "spec-driven" instead of "waterfall" doesn't change the shape of the risk.
+
+## Documentation drift, now with extra steps
+
+There's a second, quieter failure mode: specs are documentation, and documentation rots. Every team already knows this — it's why the architecture diagram is eighteen months stale and the onboarding wiki still references a service you decommissioned. The honest version of that lesson, as one recent piece on the subject put it, is that the only documentation you can fully trust is the code itself, because keeping a written artifact in sync with a changing system is continuous, invisible work that competes with everything else on a given day — and loses, almost every time.
+
+Spec-driven frameworks ask you to keep a `specs/` directory living next to your code, hand-edited, PR-reviewed, "the source of truth." That's a nice sentence. It is also asking humans to do the exact thing humans have reliably failed to do for as long as there's been documentation to fall out of sync. Wrapping it in a CLI and a state machine doesn't repeal that history, it just gives the drift a more official-looking home.
+
+## What actually enforces intent
+
+None of this means specification is a bad idea — it means the industry keeps confusing *writing down intent* with *enforcing intent*, and only one of those things prevents drift.
+
+A failing test is a specification. The difference is that it's executable: it cannot silently go stale, because the build breaks the moment reality disagrees with it. Property-based testing pushes that further, generating the edge cases a hand-written `requirements.md` would never think to enumerate. A type signature is a specification. An OpenAPI contract, a protobuf schema, a database migration with constraints — these are specifications a machine checks, not prose a machine is asked to politely agree with. This is the actual lineage spec-driven development should be claiming — TDD's red-green-refactor cycle *is* spec-driven development at the unit level, a failing test is a micro-spec written before the implementation — and it's the one piece the current tooling wave quietly drops, because executable verification is harder to demo at a keynote than a nicely formatted `tasks.md`.
+
+If your "spec" can't fail a build, it isn't a spec. It's a memo.
+
+## Where the current crop actually earns its keep
+
+To be fair to the category: for narrow, contract-shaped problems — a well-bounded API integration, a regulated workflow with an actual compliance paper trail, a greenfield service where the interface really can be nailed down before anyone writes a line — a structured planning phase before agent execution is a legitimate hedge, and tools like Spec Kit are honest about being scoped to exactly that. The failure isn't that upfront structure is worthless. It's the industry-wide leap from "useful in bounded, contract-like situations" to "the new default way software gets built," sold with the language of rigor while shipping none of rigor's actual machinery — the tests, the types, the compiler, the thing that says no.
+
+Write the spec if it helps you think. Just don't confuse the document with the guarantee. The guarantee was always the part that runs.
+

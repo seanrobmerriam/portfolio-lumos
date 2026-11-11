@@ -1,0 +1,154 @@
+---
+import Section from "@/components/wrapper/Section.astro";
+import Heading from "@/components/typography/Heading.astro";
+import Paragraph from "@/components/typography/Paragraph.astro";
+import Slider from "@/components/wrapper/Slider.astro";
+import Card from "@/components/item/Card.astro";
+
+const workImages = import.meta.glob<{ default: ImageMetadata }>(
+  "@/assets/images/work/*.webp",
+  { eager: true },
+);
+
+const work = [
+  {
+    slug: "admin-dashboard",
+    eyebrow: "Dashboard",
+    heading: "Controlplane — admin console",
+    text: "Keep track of a platform in one place. Tenant metrics, request volume, service health and queued jobs give administrators a view of what needs attention.",
+    imageAlt:
+      "Controlplane admin console showing metric cards, a request-volume bar chart and a service-health list",
+  },
+  {
+    slug: "accessibility-settings-page",
+    eyebrow: "Accessibility",
+    heading: "Common Ground — accessibility settings",
+    text: "Put reading preferences within reach. A live preview shows how text size, contrast, motion and focus settings change the experience.",
+    imageAlt:
+      "Common Ground settings page with a live reading preview beside text size, contrast, motion and focus options",
+  },
+  {
+    slug: "automation-workflow-builder",
+    eyebrow: "Product UI",
+    heading: "Threadwork — workflow builder",
+    text: "Make an automation easier to follow. Finance teams can connect triggers, conditions and actions, then open each step to configure its behavior.",
+    imageAlt:
+      "Threadwork workflow canvas with schedule, filter and email steps and a node configuration panel",
+  },
+  {
+    slug: "analytics-dashboard",
+    eyebrow: "Analytics",
+    heading: "fieldnotes — growth report",
+    text: "Follow the path from first visit to product value. Trends, activation metrics and audience segments bring different parts of the growth story together.",
+    imageAlt:
+      "fieldnotes growth report with an active-teams bar chart, key metrics and a segment table",
+  },
+  {
+    slug: "admin-data-table",
+    eyebrow: "Data table",
+    heading: "assembly — people directory",
+    text: "Help workspace admins handle everyday people management. Search, filters, role controls and bulk actions keep a busy directory easy to navigate.",
+    imageAlt:
+      "assembly people table with status tabs, a search field, role dropdowns and status badges",
+  },
+  {
+    slug: "audit-log",
+    eyebrow: "Compliance",
+    heading: "Recordkeeper — audit ledger",
+    text: "Trace a change back to its source. Searchable events and a detail panel bring the actor, origin and record of each change into view.",
+    imageAlt:
+      "Recordkeeper audit ledger listing events with an evidence inspector panel",
+  },
+  {
+    slug: "api-playground",
+    eyebrow: "Developer tools",
+    heading: "Request Lab — API playground",
+    text: "Explore an API request from input to response. An editable payload, headers and validation feedback make it easier to see how the pieces fit.",
+    imageAlt:
+      "Request Lab playground with a POST request, JSON payload editor and response panel",
+  },
+  {
+    slug: "api-reference",
+    eyebrow: "Docs",
+    heading: "Northstar — API reference",
+    text: "Give developers a clear route to their first request. Grouped endpoints, authentication guidance and example responses sit alongside the reference material.",
+    imageAlt:
+      "Northstar API reference with an endpoint sidebar, the List projects page and an example cURL request",
+  },
+  {
+    slug: "cms-content-editor",
+    eyebrow: "CMS",
+    heading: "Folio — story editor",
+    text: "Keep the writing and publishing tasks together. Article fields, a content library and publication settings support the journey from draft to published story.",
+    imageAlt:
+      "Folio story editor with a content library, article fields and a publication settings panel",
+  },
+  {
+    slug: "ai-product-landing",
+    eyebrow: "Landing page",
+    heading: "Claimwell — AI product landing",
+    text: "Explain an AI claims product through the work it supports. A sample review brings evidence and policy checks into the story, with the final decision left to a person.",
+    imageAlt:
+      "Claimwell landing page headline beside a claim review card with evidence and policy checks",
+  },
+  {
+    slug: "business-landing-page",
+    eyebrow: "Landing page",
+    heading: "Routeline — business landing",
+    text: "Show field-service teams how a working day could run. A sample schedule connects the product’s scheduling, customer updates and invoicing features.",
+    imageAlt:
+      "Routeline landing page with a “Less chasing. More doing.” headline and a sample day schedule card",
+  },
+  {
+    slug: "agency-services-landing",
+    eyebrow: "Agency",
+    heading: "Good Form — studio site",
+    text: "Introduce a studio through its point of view and visual work. Bold typography, a concise introduction and a partnership grid carry the story.",
+    imageAlt:
+      "Good Form studio homepage with a “Your next chapter. Better told.” headline and a stats band",
+  },
+  {
+    slug: "about-company-page",
+    eyebrow: "Company",
+    heading: "Northstar — about page",
+    text: "Give a company story a clear thread. A founding-year feature, timeline and team section connect its beginnings with the people building it today.",
+    imageAlt:
+      "Northstar about page with a large headline and a green 2018 field-notes card",
+  },
+  {
+    slug: "app-store-listing-page",
+    eyebrow: "App listing",
+    heading: "Orbit — app store listing",
+    text: "Introduce a focus app with a little breathing room. A timer preview, weekly activity and privacy information help visitors understand the experience.",
+    imageAlt:
+      "Orbit app listing with a “A little space to focus” headline, a 25:00 focus timer and a weekly total card",
+  },
+];
+---
+
+<!-- recent work -->
+  <Section id="work" fullHeight={true}>
+    <Heading tag="h2" class={sectionLabelClass}>
+      selected work
+    </Heading>
+    <Paragraph variant="h4" class="font-figtree">
+      A selection of interfaces, from everyday admin tools to websites that
+      introduce a product to the world.
+    </Paragraph>
+    <Slider
+      variant="contained"
+      label="Selected projects"
+      small={1.5}
+      medium={2}
+      large={3}
+    >
+      {work.map(({ slug, ...project }) => (
+        <Card
+          {...project}
+          variant="default"
+          buttonLabel="Explore project"
+          buttonHref={`https://work.seanmerriam.com/${slug}/`}
+        />
+      ))}
+    </Slider>
+  </Section>

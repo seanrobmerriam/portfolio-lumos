@@ -1,0 +1,43 @@
+---
+import type { HTMLAttributes } from "astro/types";
+type Props = HTMLAttributes<"aside"> & {
+  /** Set to `false` to omit the component. */
+  render?: boolean;
+  /** Note displayed beside the content. */
+  text: string;
+  /** Visual treatment. */
+  variant?: "margin" | "paper";
+};
+const { render = true, text, variant = "margin", class: className, ...rest } = Astro.props;
+---
+{render && text && <aside class:list={["handwritten-note_wrap", variant, className]} {...rest}>
+  <svg class="handwritten-note_arrow" width="76" height="48" viewBox="0 0 76 48" fill="none" aria-hidden="true"><path d="M70 5C48 1 59 37 9 31M21 20L7 31L23 41" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+  <p class="handwritten-note_text">{text}</p>
+</aside>}
+<style is:global>
+@layer components {
+  .handwritten-note_wrap {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    max-width: 32rem;
+    padding-block: 1rem;
+    color: var(--color-black);
+    &.paper {
+      background: var(--color-yellow);
+      padding: 1.5rem 2rem;
+      border-radius: .15rem .5rem .25rem .2rem;
+      box-shadow: .25rem .3rem 0 color-mix(in srgb, var(--color-black) 12%, transparent);
+      transform: rotate(-1deg);
+    }
+  }
+  .handwritten-note_text {
+    font-family: "Delicious Handrawn", cursive;
+    font-size: clamp(2.6rem, 3vw, 4rem);
+    line-height: 1.2;
+    margin: 0;
+    max-width: 26ch;
+  }
+  .handwritten-note_arrow { flex: 0 0 3.5rem; width: 3.5rem; height: auto; }
+}
+</style>

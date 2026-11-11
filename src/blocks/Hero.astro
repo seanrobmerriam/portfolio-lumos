@@ -1,0 +1,75 @@
+---
+import Section from "@/components/wrapper/Section.astro";
+import Heading from "@/components/typography/Heading.astro";
+import Eyebrow from "@/components/typography/Eyebrow.astro";
+import ContentWrapper from "@/components/wrapper/ContentWrapper.astro";
+---
+ <Section paddingBottom="small" paddingTop="large" gap="4" fullHeight={true}>
+    <ContentWrapper>
+      <Eyebrow tag="span" class="eyebrow_marker font-delicious-handrawn">
+        Sean Merriam
+      </Eyebrow>
+      <Heading
+        variant="display"
+        tag="h1"
+        class="tracking-tight drop-shadow-text margin-top-8 flex-grow hero-display font-stack-sans-notch"
+      >
+        Design Engineer
+      </Heading>
+    </ContentWrapper>
+    <div class="flex-horizontal-nowrap align-items-start gap-4">
+      <Heading
+        variant="h3"
+        tag="h2"
+        class="drop-shadow-text particle font-figtree flex-noshrink"
+      >
+        noun
+      </Heading>
+
+      <Heading maxWidth={60} variant="h4" tag="h3" class="drop-shadow-text  font-figtree">
+        A person who combines both{" "}
+        <span class="emphasis hero-emphasis angled-text-left-2 background-dark-green text-color-white border-2">design</span>{" "}
+        and{" "}
+        <span class="emphasis hero-emphasis angled-text-right-1 background-dark-blue text-color-white">
+          engineering
+        </span>{" "}
+        <div class="margin-top-2">
+    
+skills to create 
+<span class="emphasis hero-emphasis angled-text-left-2 background-dark-red text-color-white">cohesive
+        </span>{" "}
+        
+        and 
+        <span class="emphasis hero-emphasis angled-text-right-1 background-dark-purple text-color-white">
+          functional
+        </span>{" "}
+        digital experiences.
+        </div>  
+      </Heading>
+      
+</div>
+  </Section>
+
+  <style>
+    .drop-shadow-text {
+  /* Syntax: offset-x | offset-y | blur-radius | color */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.border-2 {
+  border-width: 2px;
+  border-style: solid;  
+}
+
+.tracking-tight {
+  letter-spacing: -0.05em;
+}   
+
+.particle {
+  background-color: var(--color-yellow);
+  padding: 0.3em;
+  vertical-align: middle;
+  color: #000000;
+  border-radius: var(--radius-small);
+}
+  </style>

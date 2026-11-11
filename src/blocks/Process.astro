@@ -1,0 +1,57 @@
+---
+import Section from "@/components/wrapper/Section.astro";
+import Heading from "@/components/typography/Heading.astro";
+import Paragraph from "@/components/typography/Paragraph.astro";
+import ProcessAnnotated from "@/components/content/ProcessAnnotated.astro";
+import NoteHandwritten from "@/components/content/NoteHandwritten.astro";
+import ContentWrapper from "@/components/wrapper/ContentWrapper.astro";
+const process = [
+  {
+    class: "text-color-blue",
+    heading: "Design",
+    text: "We start with the people using your product and what they need to get done. I explore the structure, content and visual direction, then turn those ideas into screens we can discuss and refine.",
+  },
+  {
+    heading: "Planning",
+    text: "Together, we decide what belongs in the first release and what can wait. I map out the pages, features and integrations, flag dependencies early and break the work into clear milestones.",
+  },
+  {
+    heading: "Development",
+    text: "I bring the design into the browser, build reusable components and connect the systems behind them. You can review the work as it takes shape, so we can make decisions with a working product in front of us.",
+  },
+  {
+    heading: "Testing",
+    text: "Before launch, I check the details that make a site work in everyday use: small screens, keyboard navigation, forms, loading speed and error states. We work through the rough edges before handing it over.",
+  },
+  {
+    heading: "Ongoing care",
+    text: "After launch, the site needs room to grow. I can help with fixes, updates and new features, using the same components and design rules to keep each addition consistent.",
+  },
+];
+
+const sectionLabelClass =
+  "drop-shadow-text border-2 radius-main background-yellow angled-text-right-1 emphasis font-quicksand padding-inline-2 padding-block-3 margin-top-3 text-wrap-nowrap";
+ ---
+
+
+
+  <Section id="process" fullHeight={true}>
+    <ContentWrapper variant="columns">
+    <Heading tag="h2" class={sectionLabelClass}>
+      how we’ll work
+    </Heading>
+    <Paragraph variant="h4" class="font-figtree" maxWidth={40}>
+      You get: A clear direction, work you can review along the way and care for the
+      details before launch.
+    </Paragraph>
+    <NoteHandwritten slot="column2" variant="paper" text="You review the big decisions. No disappearing until launch." />
+    <ProcessAnnotated steps={process} />
+  </ContentWrapper>
+    </Section>
+
+<style>
+            .drop-shadow-text {
+  /* Syntax: offset-x | offset-y | blur-radius | color */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+</style>

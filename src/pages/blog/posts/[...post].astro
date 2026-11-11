@@ -1,0 +1,31 @@
+---
+import { render, type CollectionEntry } from "astro:content";
+import Layout from "@/layouts/BaseLayout.astro";
+import Section from "@/components/wrapper/Section.astro";
+import ContentWrapper from "@/components/wrapper/ContentWrapper.astro";
+import Heading from "@/components/typography/Heading.astro";
+import Paragraph from "@/components/typography/Paragraph.astro";
+import RichText from "@/components/typography/RichText.astro";
+import { getPublishedPosts } from "@/utils/blog";
+
+export async function getStaticPaths() {
+  return (await getPublishedPosts()).map((post) => ({ params: { post: post.id }, props: { post } }));
+}
+interface Props { post: CollectionEntry<"blog">; }
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+
+<Layout title={post.data.title} description={post.data.description} image={post.data.image} type="article">
+  <Section>
+    <ContentWrapper>
+      <a href="/blog/">All articles</a>
+      <Heading tag="h1" maxWidth={25}>{post.data.title}</Heading>
+      <Paragraph>
+        {post.data.author} · <time datetime={post.data.pubDate.toISOString()}>{post.data.pubDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" })}</time>
+      </Paragraph>
+      <Paragraph variant="large" maxWidth={65}>{post.data.description}</Paragraph>
+      <RichText maxWidth={70}><Content /></RichText>
+    </ContentWrapper>
+  </Section>
+</Layout>

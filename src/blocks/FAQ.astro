@@ -1,0 +1,55 @@
+---
+import NoteHandwritten from "@/components/content/NoteHandwritten.astro";
+import Section from "@/components/wrapper/Section.astro";
+import Heading from "@/components/typography/Heading.astro";
+import Paragraph from "@/components/typography/Paragraph.astro";
+import Accordion from "@/components/interactive/Accordion.astro";
+import AccordionItem from "@/components/interactive/AccordionItem.astro";
+
+const sectionLabelClass =
+  "drop-shadow-text background-yellow angled-text-right-1 emphasis font-quicksand padding-inline-2 padding-block-3 margin-top-3 text-wrap-nowrap";
+
+  const faqs = [
+  {
+    heading: "What kinds of projects do you take on?",
+    text: "I work on brand systems, websites and web applications. That can mean shaping a landing page, building a product interface or bringing an existing site into a more maintainable system.",
+  },
+  {
+    heading: "What do you build with?",
+    text: "For websites, I use Astro with reusable components and plain CSS. The tools for the rest of a project depend on its content, features and the systems your team already uses.",
+  },
+  {
+    heading: "Can you move my site off its current CMS?",
+    text: "Yes. We first review your content, URLs and publishing needs, then plan the move to Astro. That includes deciding what to keep, where redirects are needed and how your team will make updates.",
+  },
+  {
+    heading: "How do AI and agents fit into a project?",
+    text: "We start with a specific task worth improving. I can build AI features into a product or set up agents to assist with development, with review and checks suited to the work.",
+  },
+  {
+    heading: "Will my team be able to update the site?",
+    text: "We choose an editing setup around your team. Developers can work with documented components; if you need to publish without touching code, we can scope a CMS into the project.",
+  },
+  {
+    heading: "How do we get started?",
+    text: "Use the form below to tell me what you have in mind, where things stand and what you need help with. A rough brief is enough to start the conversation.",
+  },
+];
+---
+ <!-- faq -->
+  <Section id="faq" fullHeight={true}>
+    <Heading tag="h2" class={sectionLabelClass}>
+      before we start
+    </Heading>
+    <Paragraph variant="h4" class="font-figtree">
+      A few things you might want to know before we work together.
+    </Paragraph>
+    <NoteHandwritten text="Good projects start with clear expectations." />
+    <Accordion openFirst={false} class="width-full">
+      {faqs.map((faq) => (
+        <AccordionItem heading={faq.heading}>
+          <Paragraph maxWidth={48}>{faq.text}</Paragraph>
+        </AccordionItem>
+      ))}
+    </Accordion>
+  </Section>

@@ -1,0 +1,61 @@
+---
+title: "Building MCP Tools in Rust: What rmcp Gets Right That a Raw HTTP API Doesn't"
+description: "Exposing a Rust service as MCP tools instead of a REST API meant agents could use it directly. Here's what that actually required and where it got interesting."
+publishDate: 2025-10-21
+tags:
+  - "rust"
+  - "mcp"
+  - "agent-tooling"
+draft: false
+---
+
+## Introduction
+
+Postbox already had a working gRPC API when I added an MCP layer on top of it using `rmcp`, Rust's MCP SDK. The instinct to skip this — "agents can just call the existing gRPC or HTTP API, why build a third interface" — is reasonable, and I had it too. What changed my mind was actually using both and noticing how differently they behave as the *consumer* changes from a typed client library to an LLM deciding what to call and why.
+
+## What a REST or gRPC API assumes about its caller
+
+A conventional API is designed for a caller that already knows what it wants to do and just needs the mechanics of doing it — the right endpoint, the right request shape. Documentation lives outside the API surface itself: a separate OpenAPI spec, a README, tribal knowledge. That's a completely reasonable design when the caller is a human engineer who read the docs once and wrote a client.
+
+An LLM-driven agent calling the same API doesn't have "read the docs once" in the same sense — its understanding of what a tool does and when to use it has to be available *at the point of the call*, ideally as part of the tool definition itself, because that's what actually goes into its context.
+
+## What MCP tool definitions add
+
+`rmcp` tools carry their own natural-language description and parameter schema as part of the protocol, not as a separate document:
+
+```rust
+#[tool(description = "Claim the next available message from an agent's mailbox. \
+Returns None if the mailbox is empty. The returned message must be acknowledged \
+via `commit_message` using the checkpoint_token, or it will be requeued after \
+the lease expires.")]
+async fn claim_message(
+    &self,
+    #[tool_param(description = "The agent's unique mailbox identifier")]
+    agent_id: String,
+) -> Result<Option<ClaimedMessage>, McpError> {
+    self.broker.claim(&agent_id).await.map_err(Into::into)
+}
+```
+
+That description isn't decoration — it's the primary way an agent decides whether and how to call this tool, since it's what actually lands in the model's context alongside the schema. Compare this to a gRPC service definition, where the equivalent information lives in a `.proto` file comment that no caller — human or model — is guaranteed to have read before making the call.
+
+## Where this actually mattered in practice
+
+The detail that made the biggest practical difference was documenting the *obligation* the tool creates, not just its immediate effect — "the returned message must be acknowledged via `commit_message`... or it will be requeued" is telling the calling agent about a follow-up action it now owns, directly in the tool it just called. Early versions of the MCP layer didn't say this, and agents calling `claim_message` in isolation, without also being told about `commit_message` in the same context window, would occasionally claim a message and never acknowledge it — not from a bug, but because nothing in the interaction told the agent it had taken on a pending obligation.
+
+```rust
+#[tool(description = "Acknowledge successful processing of a claimed message using \
+its checkpoint_token. Must be called after claim_message succeeds, or the message \
+will be requeued once its lease expires.")]
+async fn commit_message(
+    &self,
+    #[tool_param(description = "The checkpoint_token returned by claim_message")]
+    checkpoint_token: String,
+) -> Result<(), McpError> { /* ... */ }
+```
+
+Cross-referencing the two tool descriptions to each other — each mentioning the other by name — closed that gap almost entirely. This isn't something a typed gRPC client needs, because a human engineer reading the `.proto` file (or, more realistically, an onboarding doc) picks up the claim/commit relationship once and remembers it. An agent's "memory" of that relationship is whatever's in its context for a given call, which made the tool description the only reliable place to encode it.
+
+## The actual trade-off
+
+Maintaining both a gRPC API and an MCP layer over the same broker logic means two interface definitions to keep in sync when the underlying behavior changes — a real cost, not a hypothetical one. It was worth paying for Postbox specifically because agents are first-class callers of this system, not an afterthought integration. For a service where agents are one caller among many conventional clients, the calculus shifts, and a thinner MCP wrapper generated from the existing API surface, accepting some description quality loss, might be the more proportionate choice.
