@@ -13,7 +13,7 @@ export default defineConfig({
   adapter: node({ mode: "standalone" }),
   env: {
     schema: {
-      NEON_FUNCTION_CONTACT_BASE_URL: envField.string({ context: "server", access: "public" }),
+      NEON_FUNCTION_CONTACT_BASE_URL: envField.string({ context: "client", access: "public" }),
       NEON_AUTH_BASE_URL: envField.string({ context: "server", access: "secret" }),
       NEON_AUTH_COOKIE_SECRET: envField.string({ context: "server", access: "secret" }),
       NEON_REALTIME_URL: envField.string({ context: "server", access: "secret" }),
