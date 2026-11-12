@@ -7,10 +7,9 @@ import Eyebrow from "@/components/typography/Eyebrow.astro";
 import Paragraph from "@/components/typography/Paragraph.astro";
 import Button from "@/components/Button.astro";
 import ButtonWrapper from "@/components/wrapper/ButtonWrapper.astro";
-import Img from "@/components/media/Img.astro";
 import Grid from "@/components/wrapper/Grid.astro";
-import phone from "@/assets/graphics/phone.svg";
 import {
+  IconDeviceMobile,
   IconArrowUpRight,
   IconBolt,
   IconShieldCheck,
@@ -75,7 +74,7 @@ const benefits = [
       Bring your next idea to life with a foundation that’s already thought
       through. Spend your time on the work that makes it yours.
     </Paragraph>
-    <ButtonWrapper variant="stack-to-row">
+    <ButtonWrapper>
       <Button element="link" href={primaryHref}>
         Start building{" "}
         <IconArrowUpRight size="1em" stroke={1.75} aria-hidden="true" />
@@ -97,15 +96,11 @@ const benefits = [
       <div class="hero-preview_scene">
         <span class="hero-preview_orbit" aria-hidden="true"></span>
         <div class="hero-preview_device">
-          <Img
-            src={phone}
-            variant="constrained"
-            width={280}
-            sizes="(min-width: 64rem) 18rem, 60vw"
-            transparent
-            loading="eager"
-            fetchPriority="high"
-            alt="Illustration of a mobile app on a phone"
+          <IconDeviceMobile
+            size={280}
+            stroke={1}
+            role="img"
+            aria-label="Illustration of a mobile phone"
           />
         </div>
         <div class="hero-preview_message">

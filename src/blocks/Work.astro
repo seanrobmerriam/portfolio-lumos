@@ -2,13 +2,15 @@
 import Section from "@/components/wrapper/Section.astro";
 import Heading from "@/components/typography/Heading.astro";
 import Paragraph from "@/components/typography/Paragraph.astro";
-import Slider from "@/components/wrapper/Slider.astro";
+import Slider from "@/components/interactive/Slider.astro";
 import Card from "@/components/item/Card.astro";
 
 const workImages = import.meta.glob<{ default: ImageMetadata }>(
   "@/assets/images/work/*.webp",
   { eager: true },
 );
+
+const sectionLabelClass = "drop-shadow-text background-yellow angled-text-right-1 emphasis font-quicksand padding-inline-2 padding-block-3 margin-top-3 text-wrap-nowrap";
 
 const work = [
   {
@@ -145,7 +147,8 @@ const work = [
       {work.map(({ slug, ...project }) => (
         <Card
           {...project}
-          variant="default"
+          variant="stacked"
+          image={Object.entries(workImages).find(([path]) => path.endsWith(`/${slug}.webp`))![1].default}
           buttonLabel="Explore project"
           buttonHref={`https://work.seanmerriam.com/${slug}/`}
         />

@@ -10,7 +10,7 @@ export const SITE_LOCALE = "en-US";
 /** Routes excluded from search and the sitemap. Surrounding slashes are ignored. */
 export const NOINDEX_ROUTES: string[] = ["/404", "/admin", "/auth/sign-in"];
 
-export const SERVICES: const = [
+export const SERVICES = [
   {
     heading: "LLM Integrations",
     text: "Put language models to work at every step of the software development lifecycle, from research to deployment.",
