@@ -6,16 +6,19 @@ import ContentWrapper from "@/components/wrapper/ContentWrapper.astro";
 ---
  <Section paddingBottom="small" paddingTop="large" gap="4" fullHeight={true}>
     <ContentWrapper>
+
+      <div class="hero-tile">
       <Eyebrow tag="span" fontFamily="primary">
         Sean Merriam
       </Eyebrow>
       <Heading
         variant="display"
         tag="h1"
-        class="tracking-tight drop-shadow-text margin-top-8 flex-grow hero-display"
+        class="tracking-tight drop-shadow-text margin-bottom-2 margin-top-8 flex-grow hero-display"
       >
         Design Engineer
       </Heading>
+      </div>
     </ContentWrapper>
     <div class="flex-horizontal-nowrap align-items-start gap-4">
       <Heading
@@ -31,17 +34,17 @@ import ContentWrapper from "@/components/wrapper/ContentWrapper.astro";
         <span class="emphasis hero-emphasis angled-text-left-2 background-dark-green text-color-white border-2">design</span>{" "}
         and{" "}
         <span class="emphasis hero-emphasis angled-text-right-1 background-dark-blue text-color-white border-2">
-          engineering
+        engineering
         </span>{" "}
         <div class="margin-top-2">
     
-skills to create 
-<span class="emphasis hero-emphasis angled-text-left-2 background-dark-red text-color-white border-2">cohesive
+skills to create  
+{" "}<span class="emphasis hero-emphasis angled-text-left-2 background-dark-red text-color-white border-2">cohesive
         </span>{" "}
         
         and 
-        <span class="padding-left-3 emphasis hero-emphasis angled-text-right-1 background-dark-purple text-color-white border-2">
-          functional
+        {" "}<span class="emphasis hero-emphasis angled-text-right-1 background-dark-purple text-color-white border-2">
+           functional
         </span>{" "}
         digital experiences.
         </div>  
@@ -72,4 +75,18 @@ skills to create
   color: #000000;
   border-radius: var(--radius-small);
 }
+.hero-tile {
+display: flex;
+      flex-direction: column;
+      min-width: 0;
+      padding: var(--space-4);
+      background: var(--color-white);
+      border: var(--border-width) solid var(--color-black);
+      border-radius: calc(var(--radius-main) * 1.5);
+      color: var(--text);
+      text-shadow: none;
+      box-shadow: 10px 10px 2px 1px rgba(18, 18, 18, 0.2);
+    }
+
+
   </style>
