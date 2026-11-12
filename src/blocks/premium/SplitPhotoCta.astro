@@ -77,7 +77,7 @@ const visibleReassurances = reassurances.filter((item) => item.trim());
         <Paragraph variant="large" maxWidth={52}>
           {description}
         </Paragraph>
-        <ButtonWrapper variant="stack-to-row">
+        <ButtonWrapper>
           <Button
             render={!!primaryLabel.trim() && !!primaryHref.trim()}
             element="link"

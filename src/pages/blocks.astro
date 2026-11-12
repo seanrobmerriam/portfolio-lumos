@@ -5,7 +5,6 @@ import Section from "@/components/wrapper/Section.astro";
 import Heading from "@/components/typography/Heading.astro";
 import Eyebrow from "@/components/typography/Eyebrow.astro";
 import Img from "@/components/media/Img.astro";
-import phone from "@/assets/graphics/phone.svg";
 import Icon from "@/components/media/Icon.astro";
 import logo_icon from "@/assets/logo/logo-icon.svg";
 import ContentWrapper from "@/components/wrapper/ContentWrapper.astro";
@@ -18,7 +17,6 @@ import {
   IconBinary,
  } from "@tabler/icons-astro";
 import InstallTerm from "@/blocks/premium/InstallTerm.astro";
-import BrowserDemo from "@/components/content/BrowserDemo.astro";
 import Paragraph from "@/components/typography/Paragraph.astro";
 import WaitlistFeature from "@/blocks/premium/WaitlistFeature.astro";
 import CenteredProductHero from "@/blocks/premium/CenteredProductHero.astro";
@@ -55,7 +53,6 @@ import LongFormArticle from "@/blocks/premium/LongFormArticle.astro";
       <Heading tag="h2" variant="h2" maxWidth={24}>A little code. A world of possibilities.</Heading>
       <Paragraph variant="large" maxWidth={54}>Bring your ideas to life with HTML and CSS. Your next page starts with a blank canvas and a browser.</Paragraph>
     </ContentWrapper>
-    <BrowserDemo />
   </Section>
   <WaitlistFeature />
   <CenteredProductHero headingTag="h2" ratingText="Example rating: 4.8 out of 5 from 1,900 support teams" />
@@ -77,7 +74,7 @@ import LongFormArticle from "@/blocks/premium/LongFormArticle.astro";
   <SplitTextPhoto id="about-atrium" />
   <LongFormArticle id="company-article" />
 </Layout>
-<style>    </Grid>
+<style>
 
   .font-reddit-sans {
   font-family: "Reddit Sans Variable";
