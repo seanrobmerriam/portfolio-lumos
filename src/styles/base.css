@@ -93,17 +93,17 @@
   --color-white: var(--light-300);
   
   /* Typography primitives */
-  --primary-family: var(--font-figtree, system-ui, sans-serif);
+  --primary-family: var(--font-figtree), system-ui, sans-serif;
   --primary-regular: 400;
   --primary-medium: 500;
   --primary-bold: 700;
 
-  --display-family: var(--font-momo-trust-display, system-ui, sans-serif);
+  --display-family: var(--font-stack-sans-notch), system-ui, sans-serif;
   --display-regular: 400;
   --display-medium: 500;
   --display-bold: 700;
 
-  --heading-family: var(--font-fredoka, system-ui, sans-serif);
+  --heading-family: var(--font-quicksand), system-ui, sans-serif;
   --heading-regular: 400;
   --heading-medium: 500;
   --heading-bold: 700;
@@ -175,7 +175,7 @@
   --h1-text-transform: none;
   --h1-margin-top: var(--space-7);
   --h1-margin-bottom: var(--space-6);
-  --h1-font-family: var(--primary-family);
+  --h1-font-family: var(--heading-family);
   --h1-font-weight: var(--primary-medium);
   --h1-text-wrap: balance;
 
@@ -187,8 +187,8 @@
   --h2-text-transform: none;
   --h2-margin-top: var(--space-7);
   --h2-margin-bottom: var(--space-5);
-  --h2-font-family: var(--primary-family);
-  --h2-font-weight: var(--primary-medium);
+  --h2-font-family: var(--heading-family);
+  --h2-font-weight: var(--heading-medium);
   --h2-text-wrap: balance;
 
   --h3: clamp(var(--h3-min) / 16 * 1rem, ((var(--h3-min) - ((var(--h3-max) - var(--h3-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) / 16 * 1rem + ((var(--h3-max) - var(--h3-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--h3-max) / 16 * 1rem);
@@ -199,8 +199,8 @@
   --h3-text-transform: none;
   --h3-margin-top: var(--space-6);
   --h3-margin-bottom: var(--space-5);
-  --h3-font-family: var(--primary-family);
-  --h3-font-weight: var(--primary-medium);
+  --h3-font-family: var(--heading-family);
+  --h3-font-weight: var(--heading-medium);
   --h3-text-wrap: balance;
 
   --h4: clamp(var(--h4-min) / 16 * 1rem, ((var(--h4-min) - ((var(--h4-max) - var(--h4-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) / 16 * 1rem + ((var(--h4-max) - var(--h4-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--h4-max) / 16 * 1rem);
@@ -211,8 +211,8 @@
   --h4-text-transform: none;
   --h4-margin-top: var(--space-6);
   --h4-margin-bottom: var(--space-4);
-  --h4-font-family: var(--primary-family);
-  --h4-font-weight: var(--primary-medium);
+  --h4-font-family: var(--heading-family);
+  --h4-font-weight: var(--heading-medium);
   --h4-text-wrap: balance;
 
   --h5: clamp(var(--h5-min) / 16 * 1rem, ((var(--h5-min) - ((var(--h5-max) - var(--h5-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) / 16 * 1rem + ((var(--h5-max) - var(--h5-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--h5-max) / 16 * 1rem);
@@ -223,8 +223,8 @@
   --h5-text-transform: none;
   --h5-margin-top: var(--space-5);
   --h5-margin-bottom: var(--space-4);
-  --h5-font-family: var(--primary-family);
-  --h5-font-weight: var(--primary-medium);
+  --h5-font-family: var(--heading-family);
+  --h5-font-weight: var(--heading-medium);
   --h5-text-wrap: balance;
 
   --h6: clamp(var(--h6-min) / 16 * 1rem, ((var(--h6-min) - ((var(--h6-max) - var(--h6-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) / 16 * 1rem + ((var(--h6-max) - var(--h6-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--h6-max) / 16 * 1rem);
@@ -235,8 +235,8 @@
   --h6-text-transform: none;
   --h6-margin-top: var(--space-5);
   --h6-margin-bottom: var(--space-3);
-  --h6-font-family: var(--primary-family);
-  --h6-font-weight: var(--primary-medium);
+  --h6-font-family: var(--heading-family);
+  --h6-font-weight: var(--heading-medium);
   --h6-text-wrap: balance;
 
   --text-large: clamp(var(--text-large-min) / 16 * 1rem, ((var(--text-large-min) - ((var(--text-large-max) - var(--text-large-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) / 16 * 1rem + ((var(--text-large-max) - var(--text-large-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--text-large-max) / 16 * 1rem);

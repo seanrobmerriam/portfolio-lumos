@@ -1088,11 +1088,7 @@
 
 /* Custom Additions */
 
-.emphasis {
-  font-weight: bold;
-  background-color: var(--color-white);
-  color: var(--color-black);
-}
+
 
 .angled-text-left-1 {
   rotate: 2deg;
