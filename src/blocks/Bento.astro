@@ -34,7 +34,7 @@ const {
 >
   <ContentWrapper>
     <Eyebrow>What I Do</Eyebrow>
-    <Heading tag="h2" variant="h2" maxWidth={25} class="font-figtree">
+    <Heading tag="h2" variant="h2" maxWidth={25}>
       From the first idea to the finished product
     </Heading>
 
@@ -43,7 +43,7 @@ const {
   <div class="bento-feature_wrap">
     {SERVICES.map((service) => (
       <article class:list={["bento-feature_tile", service.layout]}>
-        <h3 class="bento-feature_title text-style-h4 font-quicksand">
+        <h3 class="bento-feature_title text-style-h4">
           {service.heading}
         </h3>
         <p class="bento-feature_text text-style-small">{service.text}</p>
@@ -97,7 +97,7 @@ const {
       border: var(--border-width) solid var(--color-black);
       border-radius: calc(var(--radius-main) * 1.5);
       color: var(--text);
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      text-shadow: none;
       box-shadow: 10px 10px 2px 1px rgba(18, 18, 18, 0.2);
     }
     .bento-feature_title {
@@ -154,7 +154,7 @@ const {
       margin-block: var(--space-3);
     }
     .bento-feature_mono {
-      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-family: var(--font-primary);
       font-size: 0.6875rem;
       font-variant-numeric: tabular-nums;
     }

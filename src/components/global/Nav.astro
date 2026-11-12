@@ -239,7 +239,7 @@ const navLinks = [
       display: flex;
       flex-direction: column;
       padding: var(--space-2) var(--site-margin) var(--space-4);
-      font-family: var(--primary-family);
+      font-family: var(--font-primary);
       font-size: var(--text-main);
       font-weight: var(--primary-medium);
       & > li + li {
@@ -248,6 +248,7 @@ const navLinks = [
     }
 
     .nav_link {
+      font-family: var(--font-primary);
       display: block;
       padding-block: var(--space-3);
       color: VAR(--color-black);
@@ -302,6 +303,7 @@ const navLinks = [
       }
 
       .nav_link {
+      font-family: var(--font-primary);
         padding-block: 0;
         &[aria-current="page"] {
           text-decoration: underline;

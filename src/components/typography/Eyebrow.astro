@@ -17,7 +17,7 @@ const {
   render = true,
   tag: Tag = "p",
   variant = "default",
-  fontFamily,
+  fontFamily = "primary",
   class: className,
   ...rest
 } = Astro.props;
@@ -60,7 +60,7 @@ const content = await slotContent(Astro.slots);
         font-size: var(--font-size-large);
       }
       &.font-primary .eyebrow_text {
-        font-family: var(--primary-family);
+        font-family: var(--font-primary);
       }
       &.font-display .eyebrow_text {
         font-family: var(--display-family);

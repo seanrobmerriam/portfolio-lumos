@@ -1225,123 +1225,123 @@ span:is(
 }
 
 .font-ranchers {
-  font-family: "Ranchers";
+  font-family: var(--font-primary);
 }
 
 .font-manjari {
-  font-family: "Manjari";
+  font-family: var(--font-primary);
 }
 
 .font-bayon {
-  font-family: "Bayon";
+  font-family: var(--font-primary);
 }
 
 .font-barriecito {
-  font-family: "Barriecito";
+  font-family: var(--font-primary);
 }
 
 .font-allerta-stencil {
-  font-family: "Allerta Stencil";
+  font-family: var(--font-primary);
 }
 
 .font-boogaloo {
-  font-family: "Boogaloo";
+  font-family: var(--font-primary);
 }
 
 .font-delicious-handrawn {
-  font-family: "Delicious Handrawn";
+  font-family: var(--font-primary);
 }
 
 .font-thasadith {
-  font-family: "Thasadith";
+  font-family: var(--font-primary);
 }
 
 .font-delius-unicase {
-  font-family: "Delius Unicase";
+  font-family: var(--font-primary);
 }
 
 .font-m-plus-1 {
-  font-family: "M PLUS 1 Variable";
+  font-family: var(--font-primary);
 }
 
 .font-reddit-sans {
-  font-family: "Reddit Sans Variable";
+  font-family: var(--font-primary);
 }
 
 .font-bowlby-one-sc {
-  font-family: "Bowlby One SC";
+  font-family: var(--font-primary);
 }
 
 .font-lilita-one {
-  font-family: "Lilita One";
+  font-family: var(--font-primary);
 }
 
 .font-alfa-slab-one {
-  font-family: "Alfa Slab One";
+  font-family: var(--font-primary);
 }
 
 .font-architects-daughter {
-  font-family: "Architects Daughter";
+  font-family: var(--font-primary);
 }
 
 .font-grandstander {
-  font-family: "Grandstander Variable";
+  font-family: var(--font-primary);
 }
 
 .font-acme {
-  font-family: "Acme";
+  font-family: var(--font-primary);
 }
 
 .font-luckiest-guy {
-  font-family: "Luckiest Guy";
+  font-family: var(--font-primary);
 }
 
 .font-dosis {
-  font-family: "Dosis Variable";
+  font-family: var(--font-primary);
 }
 
 .font-fredoka {
-  font-family: "Fredoka Variable";
+  font-family: var(--font-primary);
 }
 
 .font-urbanist {
-  font-family: "Urbanist Variable";
+  font-family: var(--font-primary);
 }
 
 .font-outfit {
-  font-family: "Outfit Variable";
+  font-family: var(--font-primary);
 }
 
 .font-momo-trust-display {
-  font-family: "Momo Trust Display";
+  font-family: var(--font-primary);
 }
 
 .font-stack-sans-notch {
-  font-family: "Stack Sans Notch Variable";
+  font-family: var(--display-family);
 }
 
 .font-averia-libre {
-  font-family: "Averia Libre";
+  font-family: var(--font-primary);
 }
 
 .font-indie-flower {
-  font-family: "Indie Flower";
+  font-family: var(--font-primary);
 }
 
 .font-zen-maru-gothic {
-  font-family: "Zen Maru Gothic";
+  font-family: var(--font-primary);
 }
 
 .font-red-hat-display {
-  font-family: "Red Hat Display Variable";
+  font-family: var(--font-primary);
 }
 
 .font-bangers {
-  font-family: "Bangers";
+  font-family: var(--font-primary);
 }
 
 .font-figtree {
-  font-family: "Figtree Variable";
+  font-family: var(--font-primary);
 }
 
 
@@ -1521,7 +1521,7 @@ span:is(
 }
 
 .font-quicksand {
-  font-family: "Quicksand Variable", sans-serif;
+  font-family: var(--heading-family);
 }
 
 .drop-shadow-text {

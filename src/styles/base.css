@@ -93,17 +93,18 @@
   --color-white: var(--light-300);
   
   /* Typography primitives */
-  --primary-family: var(--font-figtree), system-ui, sans-serif;
+  --font-primary: "Figtree Variable", system-ui, sans-serif;
+  --primary-family: var(--font-primary);
   --primary-regular: 400;
   --primary-medium: 500;
   --primary-bold: 700;
 
-  --display-family: var(--font-stack-sans-notch), system-ui, sans-serif;
+  --display-family: "Stack Sans Notch Variable", system-ui, sans-serif;
   --display-regular: 400;
   --display-medium: 500;
   --display-bold: 700;
 
-  --heading-family: var(--font-quicksand), system-ui, sans-serif;
+  --heading-family: "Quicksand Variable", system-ui, sans-serif;
   --heading-regular: 400;
   --heading-medium: 500;
   --heading-bold: 700;

@@ -31,10 +31,10 @@ const { render = true, steps } = Astro.props;
     border: .12rem solid currentColor;
     border-radius: 44% 53% 48% 46%;
     background: var(--color-green);
-    font-family: "Delicious Handrawn", cursive;
+    font-family: var(--font-primary);
     font-size: 1.7rem; transform: rotate(-5deg);
   }
-  .annotated-process_title { margin: 0; font-family: "Figtree Variable", sans-serif; }
+  .annotated-process_title { margin: 0; font-family: var(--font-primary); }
   .annotated-process_text {
     grid-column: 2; max-width: 48ch; margin: 0;
     @media (width >= 48rem) { grid-column: 3; }

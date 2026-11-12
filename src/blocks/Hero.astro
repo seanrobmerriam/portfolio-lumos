@@ -6,13 +6,13 @@ import ContentWrapper from "@/components/wrapper/ContentWrapper.astro";
 ---
  <Section paddingBottom="small" paddingTop="large" gap="4" fullHeight={true}>
     <ContentWrapper>
-      <Eyebrow tag="span" class="eyebrow_marker font-delicious-handrawn">
+      <Eyebrow tag="span" fontFamily="primary">
         Sean Merriam
       </Eyebrow>
       <Heading
         variant="display"
         tag="h1"
-        class="tracking-tight drop-shadow-text margin-top-8 flex-grow hero-display font-stack-sans-notch"
+        class="tracking-tight drop-shadow-text margin-top-8 flex-grow hero-display"
       >
         Design Engineer
       </Heading>
@@ -26,7 +26,7 @@ import ContentWrapper from "@/components/wrapper/ContentWrapper.astro";
         noun
       </Heading>
 
-      <Heading maxWidth={60} variant="h4" tag="h3" class="drop-shadow-text font-figtree">
+      <Heading maxWidth={60} variant="h4" tag="h3" class="drop-shadow-text">
         A person who combines both{" "}
         <span class="emphasis hero-emphasis angled-text-left-2 background-dark-green text-color-white border-2">design</span>{" "}
         and{" "}
