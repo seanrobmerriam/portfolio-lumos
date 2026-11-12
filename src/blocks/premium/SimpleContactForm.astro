@@ -1,0 +1,513 @@
+---
+import type { ComponentProps, HTMLAttributes } from "astro/types";
+import Section from "@/components/wrapper/Section.astro";
+import ContentWrapper from "@/components/wrapper/ContentWrapper.astro";
+import Heading from "@/components/typography/Heading.astro";
+import Paragraph from "@/components/typography/Paragraph.astro";
+import Button from "@/components/Button.astro";
+import {
+  IconAlertCircle,
+  IconLoader2,
+  IconMailCheck,
+  IconArrowLeft,
+} from "@tabler/icons-astro";
+
+type Props = Pick<
+  ComponentProps<typeof Section>,
+  "render" | "theme" | "paddingTop" | "paddingBottom"
+> &
+  HTMLAttributes<"section"> & {
+    /** Section heading. */
+    heading?: string;
+    /** Introductory text. */
+    description?: string;
+    /** POST endpoint accepting name, email and message. Omit for a local demonstration. */
+    endpoint?: string;
+    /** Support email address. */
+    emailAddress?: string;
+  };
+const {
+  render = true,
+  heading = "Send us a message",
+  description = "Questions about Lumora, your plan or your account? A person on our team reads every message and replies within one business day.",
+  endpoint,
+  emailAddress = "hello@lumora.com",
+  theme = "inherit",
+  paddingTop = "medium",
+  paddingBottom = "medium",
+  id = `simple-contact-${crypto.randomUUID()}`,
+  class: className,
+  ...rest
+} = Astro.props;
+const fields = [
+  {
+    name: "name",
+    label: "Name",
+    type: "text" as const,
+    autocomplete: "name" as const,
+    placeholder: "Maya Ortiz",
+    error: "Enter your name.",
+  },
+  {
+    name: "email",
+    label: "Email",
+    type: "email" as const,
+    autocomplete: "email" as const,
+    placeholder: "maya@lumora.com",
+    error: "Enter an email like maya@lumora.com.",
+  },
+];
+---
+
+<Section
+  {render}
+  {theme}
+  {paddingTop}
+  {paddingBottom}
+  {id}
+  class={className}
+  aria-labelledby={`${id}-title`}
+  {...rest}
+>
+  <lumos-simple-contact class="contact-simple_wrap" data-endpoint={endpoint}>
+    <ContentWrapper centered>
+      <p class="contact-simple_eyebrow">Contact</p>
+      <Heading tag="h2" variant="h2" id={`${id}-title`}>
+        {heading}
+      </Heading>
+      <Paragraph variant="large">{description}</Paragraph>
+    </ContentWrapper>
+    <form class="contact-simple_form" action={endpoint} method="post">
+      <p class="contact-simple_failure" role="alert" hidden>
+        We couldn’t send your message. Please try again. Your message is still
+        here.
+      </p>
+      <fieldset class="contact-simple_fields" disabled={!endpoint}>
+        {fields.map((field) => (
+          <div>
+            <label class="contact-simple_label" for={`${id}-${field.name}`}>
+              {field.label}
+            </label>
+            <input
+              class="contact-simple_control"
+              id={`${id}-${field.name}`}
+              name={field.name}
+              type={field.type}
+              autocomplete={field.autocomplete}
+              required
+              placeholder={field.placeholder}
+            />
+            <p
+              class="contact-simple_error"
+              id={`${id}-${field.name}-error`}
+              hidden
+            >
+              <IconAlertCircle size="1.1em" stroke={1.75} aria-hidden="true" />
+              {field.error}
+            </p>
+          </div>
+        ))}
+        <div>
+          <label class="contact-simple_label" for={`${id}-message`}>
+            Message
+          </label>
+          <textarea
+            class="contact-simple_control"
+            id={`${id}-message`}
+            name="message"
+            rows="5"
+            maxlength="1000"
+            required
+            placeholder="Tell us what you're working on and how we can help."
+            aria-describedby={`${id}-message-count`}
+          ></textarea>
+          <div class="contact-simple_meta">
+            <p class="contact-simple_error" id={`${id}-message-error`} hidden>
+              <IconAlertCircle size="1.1em" stroke={1.75} aria-hidden="true" />
+              Tell us how we can help.
+            </p>
+            <p class="contact-simple_count" id={`${id}-message-count`}>
+              1,000 characters left
+            </p>
+          </div>
+        </div>
+        <Button type="submit" class="width-full" data-contact-submit>
+          <span class="contact-simple_submit-content">
+            <IconLoader2
+              class="contact-simple_spinner"
+              size="1em"
+              stroke={1.75}
+              aria-hidden="true"
+              hidden
+            />
+            <span data-contact-label>Send message</span>
+          </span>
+        </Button>
+      </fieldset>
+      <p class="contact-simple_email">
+        Prefer email? Write to{" "}
+        <a href={`mailto:${emailAddress}`}>{emailAddress}</a>
+      </p>
+      {!endpoint && (
+        <p class="contact-simple_demo">
+          Interactive demo. No message is sent or saved.
+        </p>
+      )}
+      <noscript>
+        <p class="contact-simple_demo">
+          {endpoint
+            ? "Submit to continue with our contact service."
+            : "Enable JavaScript to try the contact form demo, or use the email link above."}
+        </p>
+      </noscript>
+    </form>
+    <div class="contact-simple_sent" hidden>
+      <span class="contact-simple_success-icon">
+        <IconMailCheck size="1.5em" stroke={1.75} aria-hidden="true" />
+      </span>
+      <h3 class="contact-simple_sent-title text-style-h5" tabindex="-1">
+        {endpoint ? "Message sent" : "Demo complete"}
+      </h3>
+      <p class="contact-simple_receipt">
+        Thanks, <span data-contact-name></span>.{" "}
+        {endpoint ? (
+          <>
+            We’ll reply to <strong data-contact-email></strong> within one
+            business day.
+          </>
+        ) : (
+          <>
+            You tried the contact form with <strong data-contact-email></strong>
+            . No message was sent or saved.
+          </>
+        )}
+      </p>
+      <button type="button" class="contact-simple_again">
+        <IconArrowLeft size="1em" stroke={1.75} aria-hidden="true" />
+        Send another message
+      </button>
+    </div>
+  </lumos-simple-contact>
+</Section>
+
+<script>
+  class LumosSimpleContact extends HTMLElement {
+    connectedCallback() {
+      if (this.dataset.initialized) return;
+      this.dataset.initialized = "true";
+      const form = this.querySelector<HTMLFormElement>("form")!;
+      const fields = this.querySelector<HTMLFieldSetElement>("fieldset")!;
+      const name = form.elements.namedItem("name") as HTMLInputElement;
+      const email = form.elements.namedItem("email") as HTMLInputElement;
+      const message = form.elements.namedItem("message") as HTMLTextAreaElement;
+      const count = this.querySelector<HTMLElement>(".contact-simple_count")!;
+      const submit = this.querySelector<HTMLButtonElement>(
+        "[data-contact-submit]",
+      )!;
+      const label = this.querySelector<HTMLElement>("[data-contact-label]")!;
+      const spinner = this.querySelector<SVGElement>(
+        ".contact-simple_spinner",
+      )!;
+      const failure = this.querySelector<HTMLElement>(
+        ".contact-simple_failure",
+      )!;
+      const sent = this.querySelector<HTMLElement>(".contact-simple_sent")!;
+      const title = this.querySelector<HTMLElement>(
+        ".contact-simple_sent-title",
+      )!;
+      const again = this.querySelector<HTMLButtonElement>(
+        ".contact-simple_again",
+      )!;
+      fields.disabled = false;
+      const isField = (
+        target: EventTarget | null,
+      ): target is HTMLInputElement | HTMLTextAreaElement =>
+        target === name || target === email || target === message;
+      const updateCount = () => {
+        count.textContent = `${(message.maxLength - message.value.length).toLocaleString("en-US")} characters left`;
+      };
+      const mark = (field: HTMLInputElement | HTMLTextAreaElement) => {
+        field.setCustomValidity(
+          field.value.trim() ? "" : "Please complete this field.",
+        );
+        const error = this.querySelector<HTMLElement>(
+          `[id="${field.id}-error"]`,
+        )!;
+        const wrong = !field.validity.valid;
+        error.hidden = !wrong;
+        if (wrong) field.setAttribute("aria-invalid", "true");
+        else field.removeAttribute("aria-invalid");
+        const descriptions = [
+          wrong ? error.id : "",
+          field === message ? count.id : "",
+        ]
+          .filter(Boolean)
+          .join(" ");
+        if (descriptions) field.setAttribute("aria-describedby", descriptions);
+        else field.removeAttribute("aria-describedby");
+      };
+      let focusing = false;
+      form.addEventListener(
+        "invalid",
+        (event) => {
+          if (!isField(event.target)) return;
+          event.preventDefault();
+          mark(event.target);
+          if (!focusing) {
+            focusing = true;
+            event.target.focus();
+            setTimeout(() => {
+              focusing = false;
+            }, 0);
+          }
+        },
+        true,
+      );
+      form.addEventListener("focusout", (event) => {
+        if (isField(event.target) && event.target.value) mark(event.target);
+      });
+      form.addEventListener("input", (event) => {
+        if (!isField(event.target)) return;
+        if (event.target === message) updateCount();
+        if (event.target.getAttribute("aria-invalid") === "true")
+          mark(event.target);
+      });
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (submit.disabled) return;
+        [name, email, message].forEach(mark);
+        if (!form.reportValidity()) return;
+        const data = new FormData(form);
+        submit.disabled = true;
+        submit.setAttribute("aria-busy", "true");
+        label.textContent = "Sending…";
+        spinner.removeAttribute("hidden");
+        failure.hidden = true;
+        fields.disabled = true;
+        try {
+          if (this.dataset.endpoint) {
+            const response = await fetch(this.dataset.endpoint, {
+              method: "POST",
+              body: data,
+              headers: { Accept: "application/json" },
+              signal: AbortSignal.timeout(15000),
+            });
+            if (!response.ok) throw new Error("Message not sent");
+          } else {
+            await new Promise((resolve) => setTimeout(resolve, 1200));
+          }
+          if (!this.isConnected) return;
+          this.querySelector<HTMLElement>("[data-contact-name]")!.textContent =
+            name.value.trim().split(/\s+/)[0];
+          this.querySelector<HTMLElement>("[data-contact-email]")!.textContent =
+            email.value;
+          form.hidden = true;
+          sent.hidden = false;
+          title.focus();
+        } catch {
+          failure.hidden = false;
+        } finally {
+          fields.disabled = false;
+          submit.disabled = false;
+          submit.removeAttribute("aria-busy");
+          label.textContent = "Send message";
+          spinner.setAttribute("hidden", "");
+        }
+      });
+      again.addEventListener("click", () => {
+        message.value = "";
+        message.setCustomValidity("");
+        message.removeAttribute("aria-invalid");
+        message.setAttribute("aria-describedby", count.id);
+        this.querySelector<HTMLElement>(`[id="${message.id}-error"]`)!.hidden =
+          true;
+        updateCount();
+        sent.hidden = true;
+        form.hidden = false;
+        message.focus();
+      });
+    }
+  }
+  if (!customElements.get("lumos-simple-contact"))
+    customElements.define("lumos-simple-contact", LumosSimpleContact);
+</script>
+
+<style is:global>
+  @layer components {
+    .contact-simple_wrap {
+      display: block;
+      width: 100%;
+      max-width: 36rem;
+      margin-inline: auto;
+    }
+    .contact-simple_eyebrow {
+      color: var(--text-2);
+      font-family: ui-monospace, monospace;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+    }
+    .contact-simple_form {
+      display: grid;
+      gap: var(--space-4);
+      margin-top: var(--space-7);
+    }
+    .contact-simple_fields {
+      display: grid;
+      gap: var(--space-4);
+      min-width: 0;
+      border: 0;
+      padding: 0;
+      margin: 0;
+    }
+    .contact-simple_label {
+      display: block;
+      margin-bottom: var(--space-1);
+      font-size: 0.875rem;
+      font-weight: var(--primary-medium);
+    }
+    .contact-simple_control {
+      display: block;
+      width: 100%;
+      min-height: 2.5rem;
+      padding: var(--space-1) var(--space-2);
+      border: var(--border-width) solid var(--border);
+      border-radius: var(--radius-main);
+      background-color: var(--background-2);
+      color: var(--text);
+      font-size: 0.875rem;
+      line-height: 1.7;
+      &::placeholder {
+        color: var(--text-2);
+        opacity: 1;
+      }
+      &:hover {
+        border-color: var(--text-2);
+      }
+      &:focus {
+        outline: var(--focus-width) solid var(--text);
+        outline-offset: var(--focus-offset-inner);
+      }
+      &[aria-invalid="true"] {
+        border-style: dashed;
+        border-width: var(--focus-width);
+      }
+    }
+    textarea.contact-simple_control {
+      resize: vertical;
+    }
+    .contact-simple_meta {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: var(--space-3);
+      margin-top: var(--space-1);
+    }
+    .contact-simple_error {
+      display: flex;
+      align-items: start;
+      gap: 0.375em;
+      margin-top: var(--space-1);
+      font-size: 0.8125rem;
+      font-weight: var(--primary-medium);
+      & > svg {
+        flex-shrink: 0;
+        margin-top: 0.2em;
+      }
+    }
+    .contact-simple_meta > .contact-simple_error {
+      margin-top: 0;
+    }
+    .contact-simple_count {
+      margin-left: auto;
+      color: var(--text-2);
+      font-size: 0.8125rem;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+    .contact-simple_submit-content {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-1);
+    }
+    .contact-simple_email,
+    .contact-simple_demo {
+      color: var(--text-2);
+      font-size: 0.875rem;
+      text-align: center;
+      & a {
+        color: var(--text);
+        font-weight: var(--primary-medium);
+        text-underline-offset: 0.25em;
+      }
+    }
+    .contact-simple_sent {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-4);
+      margin-top: var(--space-7);
+      padding: var(--space-6);
+      border: var(--border-width) solid var(--border);
+      border-radius: calc(var(--radius-main) * 2);
+      background-color: var(--background-2);
+      text-align: center;
+    }
+    .contact-simple_success-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.75rem;
+      height: 2.75rem;
+      border-radius: var(--radius-main);
+      background-color: var(--background-3);
+    }
+    .contact-simple_sent-title {
+      margin: 0;
+    }
+    .contact-simple_receipt {
+      max-width: 40ch;
+      color: var(--text-2);
+      font-size: 0.875rem;
+      & strong {
+        color: var(--text);
+        overflow-wrap: anywhere;
+      }
+    }
+    .contact-simple_again {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+      color: var(--text-2);
+      font-size: 0.875rem;
+      border-radius: var(--radius-small);
+      &:hover {
+        color: var(--text);
+      }
+    }
+    .contact-simple_failure {
+      padding: var(--space-3);
+      border: var(--focus-width) dashed var(--text);
+      border-radius: var(--radius-small);
+      font-size: 0.875rem;
+    }
+    .contact-simple_form[hidden],
+    .contact-simple_sent[hidden],
+    .contact-simple_error[hidden],
+    .contact-simple_failure[hidden],
+    .contact-simple_spinner[hidden] {
+      display: none;
+    }
+    .contact-simple_spinner {
+      @media (prefers-reduced-motion: no-preference) {
+        animation: contact-simple-spin 1s linear infinite;
+      }
+    }
+    @keyframes contact-simple-spin {
+      to {
+        rotate: 1turn;
+      }
+    }
+  }
+</style>

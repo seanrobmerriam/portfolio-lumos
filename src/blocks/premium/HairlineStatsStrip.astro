@@ -1,0 +1,225 @@
+---
+import type { ComponentProps, HTMLAttributes } from "astro/types";
+import Section from "@/components/wrapper/Section.astro";
+import { IconArrowRight } from "@tabler/icons-astro";
+
+type Statistic = { label: string; value: string; unit?: string };
+type Props = Pick<
+  ComponentProps<typeof Section>,
+  "render" | "theme" | "paddingTop" | "paddingBottom"
+> &
+  HTMLAttributes<"section"> & {
+    /** Eyebrow text. */
+    eyebrow?: string;
+    /** Section heading. */
+    heading?: string;
+    /** Introductory text. */
+    description?: string;
+    /** Measured figures with labels and optional units. */
+    statistics?: Statistic[];
+    /** Source and measurement period. */
+    source?: string;
+    /** Report link label. */
+    reportLabel?: string;
+    /** Report destination. */
+    reportHref?: string;
+  };
+const {
+  render = true,
+  eyebrow = "Kestrel in numbers",
+  heading = "Freight that arrives when we said it would",
+  description = "Kestrel moves parts, medicines and retail stock for 1,900 shippers across Europe, the Gulf and North America. Every figure below is measured on every shipment, not sampled.",
+  statistics = [
+    { value: "6.8M", label: "Shipments delivered in 2025" },
+    { value: "98.6%", label: "On time, last 12 months" },
+    { value: "41", label: "Countries served door to door" },
+    { value: "2.3", unit: "hours", label: "Median customs clearance, Q3 2026" },
+  ],
+  source = "From Kestrel’s shipment records, Oct 1, 2025 to Sep 30, 2026 unless the label says otherwise. On time means delivered inside the window quoted at booking.",
+  reportLabel = "Read the service report",
+  reportHref = "#",
+  theme = "inherit",
+  paddingTop = "medium",
+  paddingBottom = "medium",
+  id = `hairline-stats-${crypto.randomUUID()}`,
+  class: className,
+  ...rest
+} = Astro.props;
+const visibleStatistics = statistics.filter(
+  ({ label, value }) => label.trim() && value.trim(),
+);
+---
+
+<Section
+  render={render && !!heading.trim() && visibleStatistics.length > 0}
+  {theme}
+  {paddingTop}
+  {paddingBottom}
+  {id}
+  class={className}
+  aria-labelledby={`${id}-title`}
+  {...rest}
+>
+  <div class="hairline-stats_wrap">
+    <div class="hairline-stats_intro">
+      <div>
+        {eyebrow && <p class="hairline-stats_eyebrow">{eyebrow}</p>}
+        <h2 class="hairline-stats_heading text-style-h3" id={`${id}-title`}>
+          {heading}
+        </h2>
+      </div>
+      {description && (
+        <p class="hairline-stats_lead text-style-large">{description}</p>
+      )}
+    </div>
+    <dl
+      class="hairline-stats_list"
+      style={`--_stat-count: ${visibleStatistics.length}`}
+    >
+      {visibleStatistics.map(({ label, value, unit }) => (
+        <div class="hairline-stats_item">
+          <dt class="hairline-stats_label">{label}</dt>
+          <dd class="hairline-stats_value text-style-h2">
+            {value}
+            {unit && <span class="hairline-stats_unit"> {unit}</span>}
+          </dd>
+        </div>
+      ))}
+    </dl>
+    <div class="hairline-stats_footer">
+      {source && <p class="hairline-stats_source">{source}</p>}
+      {reportLabel && reportHref && (
+        <a class="hairline-stats_link" href={reportHref}>
+          {reportLabel}
+          <IconArrowRight size="1em" stroke={1.75} aria-hidden="true" />
+        </a>
+      )}
+    </div>
+  </div>
+</Section>
+
+<style is:global>
+  @layer components {
+    .hairline-stats_wrap {
+      width: 100%;
+      @media (width >= 30rem) {
+        & .hairline-stats_footer {
+          flex-direction: row;
+          align-items: center;
+          justify-content: space-between;
+        }
+      }
+      @media (width >= 48rem) {
+        & .hairline-stats_list {
+          grid-template-columns: repeat(var(--_stat-count, 4), minmax(0, 1fr));
+          padding-block: var(--space-6);
+        }
+        & .hairline-stats_item {
+          padding-inline: var(--space-4);
+          border-inline-start: var(--border-width) solid var(--border);
+        }
+        & .hairline-stats_item:first-child {
+          padding-inline-start: 0;
+          border-inline-start: 0;
+        }
+      }
+      @media (width >= 64rem) {
+        & .hairline-stats_intro {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          align-items: end;
+          gap: var(--space-8);
+        }
+      }
+    }
+    .hairline-stats_intro {
+      display: grid;
+      gap: var(--space-3);
+    }
+    .hairline-stats_eyebrow {
+      margin: 0;
+      font-family: ui-monospace, monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-2);
+    }
+    .hairline-stats_heading {
+      margin: var(--space-3) 0 0;
+    }
+    .hairline-stats_lead {
+      margin: 0;
+      max-width: 60ch;
+      color: var(--text-2);
+    }
+    .hairline-stats_list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-5) 0;
+      border-block: var(--border-width) solid var(--border);
+      margin-top: var(--space-7);
+      padding-block: var(--space-5);
+    }
+    .hairline-stats_item {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      padding-inline-end: var(--space-3);
+    }
+    .hairline-stats_value {
+      order: -1;
+      margin: 0;
+      font-variant-numeric: tabular-nums;
+    }
+    .hairline-stats_label {
+      margin-top: var(--space-2);
+      font-size: 0.875rem;
+      line-height: 1.5;
+      color: var(--text-2);
+      text-wrap: balance;
+    }
+    .hairline-stats_unit {
+      color: var(--text-2);
+      font-size: 1rem;
+      font-weight: var(--primary-medium);
+      letter-spacing: var(--letter-spacing-normal);
+    }
+    .hairline-stats_footer {
+      display: flex;
+      flex-direction: column;
+      align-items: start;
+      gap: var(--space-3);
+      margin-top: var(--space-4);
+    }
+    .hairline-stats_source {
+      margin: 0;
+      max-width: 86ch;
+      color: var(--text-2);
+      font-size: 0.75rem;
+      line-height: 1.7;
+    }
+    .hairline-stats_link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25em;
+      flex-shrink: 0;
+      color: var(--link-text);
+      border-radius: var(--radius-small);
+      font-size: 0.875rem;
+      font-weight: var(--primary-medium);
+      &:hover {
+        color: var(--link-text-hover);
+      }
+      &:hover > svg {
+        translate: 0.125em;
+      }
+      & > svg {
+        flex-shrink: 0;
+      }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .hairline-stats_link > svg {
+        transition: translate var(--hover-duration) var(--hover-ease);
+      }
+    }
+  }
+</style>

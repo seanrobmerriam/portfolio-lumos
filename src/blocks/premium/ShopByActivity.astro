@@ -1,0 +1,254 @@
+---
+import type { ComponentProps, HTMLAttributes } from "astro/types";
+import Section from "@/components/wrapper/Section.astro";
+import ContentWrapper from "@/components/wrapper/ContentWrapper.astro";
+import Heading from "@/components/typography/Heading.astro";
+import Paragraph from "@/components/typography/Paragraph.astro";
+import {
+  IconTent,
+  IconBackpack,
+  IconShoe,
+  IconMountain,
+  IconBike,
+  IconCooker,
+  IconCompass,
+  IconSnowflake,
+} from "@tabler/icons-astro";
+
+const icons = {
+  tent: IconTent,
+  backpack: IconBackpack,
+  footwear: IconShoe,
+  climbing: IconMountain,
+  cycling: IconBike,
+  cooking: IconCooker,
+  navigation: IconCompass,
+  snowsports: IconSnowflake,
+};
+
+type Activity = {
+  name: string;
+  count: number;
+  href: string;
+  icon: keyof typeof icons;
+};
+
+type Props = Pick<
+  ComponentProps<typeof Section>,
+  "render" | "theme" | "paddingTop" | "paddingBottom"
+> &
+  HTMLAttributes<"section"> & {
+    /** Section heading. */
+    heading?: string;
+    /** Introductory text. */
+    description?: string;
+    /** Activity names, item counts, icons and destinations. */
+    activities?: Activity[];
+  };
+
+const {
+  render = true,
+  heading = "Shop by activity",
+  description = "Find your kit for wherever the outdoors takes you.",
+  activities = [
+    { name: "Tents", count: 64, href: "/collections/tents/", icon: "tent" },
+    {
+      name: "Backpacks",
+      count: 118,
+      href: "/collections/backpacks/",
+      icon: "backpack",
+    },
+    {
+      name: "Footwear",
+      count: 142,
+      href: "/collections/footwear/",
+      icon: "footwear",
+    },
+    {
+      name: "Climbing",
+      count: 87,
+      href: "/collections/climbing/",
+      icon: "climbing",
+    },
+    {
+      name: "Cycling",
+      count: 53,
+      href: "/collections/cycling/",
+      icon: "cycling",
+    },
+    {
+      name: "Camp cooking",
+      count: 46,
+      href: "/collections/camp-cooking/",
+      icon: "cooking",
+    },
+    {
+      name: "Navigation",
+      count: 31,
+      href: "/collections/navigation/",
+      icon: "navigation",
+    },
+    {
+      name: "Snowsports",
+      count: 72,
+      href: "/collections/snowsports/",
+      icon: "snowsports",
+    },
+  ],
+  theme = "inherit",
+  paddingTop = "small",
+  paddingBottom = "small",
+  id = `shop-by-activity-${crypto.randomUUID()}`,
+  class: className,
+  ...rest
+} = Astro.props;
+---
+
+<Section
+  render={render && activities.length > 0}
+  {theme}
+  {paddingTop}
+  {paddingBottom}
+  {id}
+  gap="5"
+  class={className}
+  aria-labelledby={`${id}-title`}
+  {...rest}
+>
+  <ContentWrapper centered>
+    <Heading tag="h2" variant="h4" id={`${id}-title`} class="margin-top-0">
+      {heading}
+    </Heading>
+    <Paragraph variant="small" maxWidth={64}>
+      {description}
+    </Paragraph>
+  </ContentWrapper>
+  <div class="shop-activity_wrap">
+    <ul class="shop-activity_list" role="list">
+      {activities.map(({ name, count, href, icon }) => {
+        const ActivityIcon = icons[icon];
+        return (
+          <li class="shop-activity_item">
+            <a class="shop-activity_link" href={href}>
+              <span class="shop-activity_disc">
+                <ActivityIcon size="1.75em" stroke={1.75} aria-hidden="true" />
+              </span>
+              <span class="shop-activity_name">{name}</span>
+              <span class="shop-activity_separator">, </span>
+              <span class="shop-activity_count">
+                {count} {count === 1 ? "item" : "items"}
+              </span>
+            </a>
+          </li>
+        );
+      })}
+    </ul>
+  </div>
+</Section>
+
+<style is:global>
+  @layer components {
+    .shop-activity_wrap {
+      width: calc(100% + var(--site-margin) * 2);
+      max-width: none;
+      margin-inline: calc(-1 * var(--site-margin));
+
+      @media (width >= 40rem) {
+        width: 100%;
+        margin-inline: 0;
+        & .shop-activity_list {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: var(--space-4) var(--space-3);
+          max-width: 42rem;
+          margin-inline: auto;
+          padding-inline: var(--space-1);
+          overflow: visible;
+          scroll-snap-type: none;
+        }
+        & .shop-activity_item {
+          width: auto;
+        }
+        & .shop-activity_disc {
+          width: 5rem;
+          height: 5rem;
+        }
+      }
+      @media (width >= 64rem) {
+        & .shop-activity_list {
+          max-width: 64rem;
+          grid-template-columns: repeat(8, minmax(0, 1fr));
+        }
+      }
+    }
+    .shop-activity_list {
+      position: relative;
+      display: flex;
+      gap: var(--space-1);
+      padding: var(--space-1) var(--site-margin);
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x mandatory;
+      scroll-padding-inline: var(--site-margin);
+      scrollbar-width: none;
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+    .shop-activity_item {
+      width: 6rem;
+      flex-shrink: 0;
+      scroll-snap-align: start;
+    }
+    .shop-activity_link {
+      display: block;
+      padding: var(--space-1) 0.25rem;
+      border-radius: var(--radius-main);
+      text-align: center;
+      color: var(--text);
+      &:hover .shop-activity_disc {
+        background-color: var(--background-3);
+      }
+    }
+    .shop-activity_disc {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 4rem;
+      height: 4rem;
+      margin-inline: auto;
+      border-radius: var(--radius-round);
+      background-color: var(--background-2);
+      box-shadow: inset 0 0 0 var(--border-width) var(--border);
+      font-size: 1rem;
+      @media (prefers-reduced-motion: no-preference) {
+        transition: background-color var(--hover-duration) var(--hover-ease);
+      }
+    }
+    .shop-activity_name {
+      display: block;
+      margin-top: var(--space-2);
+      font-size: 0.875rem;
+      line-height: 1.5;
+      font-weight: var(--primary-medium);
+      white-space: nowrap;
+    }
+    .shop-activity_count {
+      display: block;
+      margin-top: 0.125rem;
+      color: var(--text-2);
+      font-size: 0.75rem;
+      line-height: 1.5;
+      font-variant-numeric: tabular-nums;
+    }
+    .shop-activity_separator {
+      position: absolute;
+      width: 1rem;
+      height: 1rem;
+      padding: 0;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+  }
+</style>

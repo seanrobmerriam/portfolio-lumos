@@ -1,0 +1,493 @@
+---
+import { randomUUID } from "node:crypto";
+import type { ComponentProps } from "astro/types";
+import Section from "@/components/wrapper/Section.astro";
+import ContentWrapper from "@/components/wrapper/ContentWrapper.astro";
+import Heading from "@/components/typography/Heading.astro";
+import Paragraph from "@/components/typography/Paragraph.astro";
+import {
+  IconArrowRight,
+  IconLoader2,
+  IconAlertCircle,
+  IconMailCheck,
+} from "@tabler/icons-astro";
+
+type Props = Omit<
+  ComponentProps<typeof Section>,
+  "gap" | "align" | "fullHeight" | "containerClass" | "containerAttrs"
+> & {
+  /** Eyebrow text. */
+  eyebrow?: string;
+  /** Heading text. */
+  heading?: string;
+  /** Introductory text. */
+  description?: string;
+  /** Sample issue link label. */
+  sampleText?: string;
+  /** Published sample issue destination. */
+  sampleHref?: string;
+  /** Published privacy policy destination. */
+  privacyHref?: string;
+  /** Email placeholder. */
+  placeholder?: string;
+  /** Privacy and cadence text preceding the privacy policy link. */
+  privacyText?: string;
+  /** POST endpoint accepting an email field; a successful response confirms receipt. Omit for a local demonstration. */
+  endpoint?: string;
+  /** Confirmation heading for a successful endpoint response. */
+  successHeading?: string;
+  /** Confirmation text after the submitted address. Match the subscription service's actual behavior. */
+  successText?: string;
+};
+const {
+  render = true,
+  eyebrow = "Product updates",
+  heading = "What shipped in Halcyon, once a month",
+  description = "New features, fixes worth knowing about and what we're building next, in one short email on the first Tuesday of each month.",
+  sampleText = "Read the October issue",
+  sampleHref = "#",
+  privacyHref = "#",
+  placeholder = "maya@lumora.com",
+  privacyText = "One email a month, product news only. Unsubscribe from any issue in one click. Read our",
+  endpoint,
+  successHeading = "Subscription request received",
+  successText = "Follow any next steps provided by the newsletter service.",
+  theme = "inherit",
+  paddingTop = "medium",
+  paddingBottom = "medium",
+  class: className,
+  ...rest
+} = Astro.props;
+const uid = `inline-newsletter-${randomUUID()}`;
+---
+
+<Section
+  render={render && Boolean(heading.trim())}
+  {theme}
+  {paddingTop}
+  {paddingBottom}
+  aria-labelledby={`${uid}-title`}
+  class={className}
+  {...rest}
+>
+  <div
+    class="inline-newsletter_wrap"
+    data-inline-newsletter
+    data-endpoint={endpoint}
+  >
+    <ContentWrapper>
+      {eyebrow.trim() && (
+        <p class="inline-newsletter_eyebrow text-style-small">{eyebrow}</p>
+      )}
+      <Heading tag="h2" variant="h2" maxWidth={26} id={`${uid}-title`}>
+        {heading}
+      </Heading>
+      <Paragraph
+        render={Boolean(description.trim())}
+        variant="large"
+        maxWidth={60}
+      >
+        {description}
+      </Paragraph>
+      {sampleText.trim() && sampleHref.trim() && (
+        <a
+          class="inline-newsletter_sample-link text-style-small"
+          href={sampleHref}
+        >
+          {sampleText}
+          <IconArrowRight size="1em" stroke={1.75} aria-hidden="true" />
+        </a>
+      )}
+    </ContentWrapper>
+    <div class="inline-newsletter_signup">
+      <form action={endpoint} method="post">
+        <fieldset class="inline-newsletter_fields" disabled={!endpoint}>
+          <label
+            class="inline-newsletter_label text-style-small"
+            for={`${uid}-email`}
+          >
+            Email address
+          </label>
+          <div class="inline-newsletter_controls">
+            <input
+              class="inline-newsletter_input"
+              id={`${uid}-email`}
+              type="email"
+              name="email"
+              autocomplete="email"
+              required
+              placeholder={placeholder}
+              aria-describedby={`${uid}-help`}
+            />
+            <div class="inline-newsletter_error-slot">
+              <p
+                class="inline-newsletter_error"
+                id={`${uid}-error`}
+                aria-live="polite"
+                hidden
+              >
+                <IconAlertCircle size="1em" stroke={1.75} aria-hidden="true" />
+                <span>Enter an email like {placeholder}.</span>
+              </p>
+            </div>
+            <button class="inline-newsletter_submit" type="submit">
+              <span class="inline-newsletter_idle">Subscribe</span>
+              <span class="inline-newsletter_busy">
+                <IconLoader2 size="1em" stroke={1.75} aria-hidden="true" />
+                Subscribing…
+              </span>
+            </button>
+          </div>
+        </fieldset>
+        <p class="inline-newsletter_help text-style-small" id={`${uid}-help`}>
+          {privacyText} <a href={privacyHref}>privacy policy</a>.
+        </p>
+        {!endpoint && (
+          <p class="inline-newsletter_help text-style-small">
+            Interactive demo. Your address stays in this browser; no email will
+            be sent.
+          </p>
+        )}
+        <noscript>
+          <p class="inline-newsletter_help text-style-small">
+            {endpoint
+              ? "Submit to continue with our subscription service."
+              : "Enable JavaScript to try this local signup demo."}
+          </p>
+        </noscript>
+      </form>
+      <div class="inline-newsletter_done" hidden>
+        <h3 class="inline-newsletter_done-title text-style-h6" tabindex="-1">
+          <IconMailCheck size="1.25em" stroke={1.75} aria-hidden="true" />
+          {endpoint ? successHeading : "Demo complete"}
+        </h3>
+        <p class="inline-newsletter_help text-style-small">
+          {endpoint
+            ? "Your subscription request was submitted for "
+            : "You tried the signup with "}
+          <strong class="inline-newsletter_address"></strong>.{" "}
+          {endpoint
+            ? successText
+            : "No address was saved and no confirmation email was sent."}
+        </p>
+        <button class="inline-newsletter_change text-style-small" type="button">
+          Use a different email
+        </button>
+      </div>
+    </div>
+  </div>
+</Section>
+<script>
+  function initInlineNewsletters() {
+    document
+      .querySelectorAll<HTMLElement>("[data-inline-newsletter]")
+      .forEach((root) => {
+        if (root.dataset.initialized) return;
+        const form = root.querySelector<HTMLFormElement>("form")!;
+        const fields = root.querySelector<HTMLFieldSetElement>("fieldset")!;
+        const email = root.querySelector<HTMLInputElement>(
+          'input[type="email"]',
+        )!;
+        const error = root.querySelector<HTMLElement>(
+          ".inline-newsletter_error",
+        )!;
+        const submit = root.querySelector<HTMLButtonElement>(
+          'button[type="submit"]',
+        )!;
+        const done = root.querySelector<HTMLElement>(
+          ".inline-newsletter_done",
+        )!;
+        const title = root.querySelector<HTMLElement>(
+          ".inline-newsletter_done-title",
+        )!;
+        const address = root.querySelector<HTMLElement>(
+          ".inline-newsletter_address",
+        )!;
+        const change = root.querySelector<HTMLButtonElement>(
+          ".inline-newsletter_change",
+        )!;
+        const description = email.getAttribute("aria-describedby")!;
+        const mark = () => {
+          const wrong = !email.validity.valid;
+          error.textContent = `Enter an email like ${email.placeholder}.`;
+          error.hidden = !wrong;
+          email.setAttribute("aria-invalid", String(wrong));
+          email.setAttribute(
+            "aria-describedby",
+            wrong ? `${error.id} ${description}` : description,
+          );
+        };
+        email.addEventListener("invalid", (event) => {
+          event.preventDefault();
+          mark();
+          email.focus();
+        });
+        email.addEventListener("blur", () => {
+          if (email.value) mark();
+        });
+        email.addEventListener("input", () => {
+          if (!error.hidden) mark();
+        });
+        form.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          if (submit.disabled || !form.reportValidity()) return;
+          const value = email.value;
+          const data = new FormData(form);
+          submit.disabled = true;
+          email.readOnly = true;
+          submit.setAttribute("aria-busy", "true");
+          error.hidden = true;
+          try {
+            if (root.dataset.endpoint) {
+              const response = await fetch(root.dataset.endpoint, {
+                method: "POST",
+                body: data,
+                headers: { Accept: "application/json" },
+                signal: AbortSignal.timeout(15000),
+              });
+              if (!response.ok) throw new Error("Subscription request failed");
+            } else {
+              await new Promise((resolve) => setTimeout(resolve, 700));
+            }
+            if (!root.isConnected) return;
+            address.textContent = value;
+            form.hidden = true;
+            done.hidden = false;
+            title.focus();
+          } catch {
+            error.textContent =
+              "We couldn’t submit your request. Please try again.";
+            error.hidden = false;
+            email.setAttribute(
+              "aria-describedby",
+              `${error.id} ${description}`,
+            );
+            email.focus();
+          } finally {
+            submit.disabled = false;
+            email.readOnly = false;
+            submit.removeAttribute("aria-busy");
+          }
+        });
+        change.addEventListener("click", () => {
+          done.hidden = true;
+          form.hidden = false;
+          email.focus();
+          email.select();
+        });
+        root.dataset.initialized = "true";
+        fields.disabled = false;
+      });
+  }
+  initInlineNewsletters();
+  document.addEventListener("astro:page-load", initInlineNewsletters);
+</script>
+
+<style is:global>
+  @layer components {
+    .inline-newsletter_wrap {
+      display: grid;
+      align-items: center;
+      gap: var(--space-8);
+      width: 100%;
+      min-width: 0;
+      & [hidden] {
+        display: none;
+      }
+      & :is(a, input, button):focus-visible {
+        outline: var(--focus-width) solid var(--text);
+        outline-offset: var(--focus-offset);
+      }
+      @media (width >= 30rem) {
+        .inline-newsletter_controls {
+          grid-template-columns: minmax(0, 1fr) auto;
+        }
+        .inline-newsletter_submit {
+          grid-area: 1 / 2;
+        }
+        .inline-newsletter_error-slot {
+          grid-column: 1 / -1;
+          grid-row: 2;
+          min-height: 1.625rem;
+        }
+      }
+      @media (width >= 64rem) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        .inline-newsletter_signup {
+          justify-self: end;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .inline-newsletter_busy svg {
+          animation: none;
+        }
+        .inline-newsletter_sample-link svg {
+          transition: none;
+        }
+      }
+    }
+    .inline-newsletter_eyebrow {
+      color: var(--text-2);
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .inline-newsletter_sample-link {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+      width: fit-content;
+      color: var(--link-text);
+      border-radius: var(--radius-small);
+      font-weight: var(--primary-medium);
+      & svg {
+        transition: transform 0.2s ease;
+      }
+      &:hover svg {
+        transform: translateX(0.125rem);
+      }
+    }
+    .inline-newsletter_signup {
+      width: 100%;
+      max-width: 36rem;
+      min-width: 0;
+    }
+    .inline-newsletter_fields {
+      border: 0;
+      padding: 0;
+      margin: 0;
+      min-width: 0;
+    }
+    .inline-newsletter_label {
+      display: block;
+      margin-bottom: var(--space-1);
+      font-weight: var(--primary-medium);
+    }
+    .inline-newsletter_controls {
+      display: grid;
+      column-gap: var(--space-2);
+    }
+    .inline-newsletter_input {
+      width: 100%;
+      min-width: 0;
+      min-height: 2.75rem;
+      border: var(--border-width) solid var(--border);
+      border-radius: var(--radius-main);
+      padding: 0.65em 0.9em;
+      background: var(--background-2);
+      color: var(--text);
+      font: inherit;
+      &::placeholder {
+        color: var(--text-2);
+        opacity: 1;
+      }
+      &[aria-invalid="true"] {
+        outline: var(--focus-width) solid var(--text);
+        outline-offset: calc(-1 * var(--focus-width));
+      }
+    }
+    .inline-newsletter_error-slot {
+      display: flow-root;
+      min-height: 2.25rem;
+      padding-top: 0.375rem;
+    }
+    .inline-newsletter_error {
+      display: flex;
+      align-items: start;
+      gap: var(--space-1);
+      margin: 0;
+      font-size: 0.8125rem;
+      font-weight: var(--primary-medium);
+      & svg {
+        flex: none;
+        margin-top: 0.2em;
+      }
+    }
+    .inline-newsletter_submit {
+      display: inline-grid;
+      place-items: center;
+      min-height: 2.75rem;
+      padding: 0.65em 1.25em;
+      background: var(--button-background);
+      color: var(--button-text);
+      border: var(--border-width) solid var(--button-border);
+      border-radius: var(--radius-small);
+      font: inherit;
+      font-weight: var(--primary-medium);
+      cursor: pointer;
+      &:hover {
+        background: var(--button-background-hover);
+        color: var(--button-text-hover);
+        border-color: var(--button-border-hover);
+      }
+      &:disabled {
+        cursor: wait;
+      }
+      &[aria-busy="true"] {
+        .inline-newsletter_idle {
+          visibility: hidden;
+        }
+        .inline-newsletter_busy {
+          visibility: visible;
+        }
+      }
+    }
+    .inline-newsletter_idle,
+    .inline-newsletter_busy {
+      grid-area: 1 / 1;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .inline-newsletter_busy {
+      visibility: hidden;
+      & svg {
+        animation: inline-newsletter-spin 1s linear infinite;
+      }
+    }
+    .inline-newsletter_help {
+      color: var(--text-2);
+      margin: var(--space-2) 0 0;
+      & a {
+        color: var(--link-text);
+        text-decoration: underline;
+        text-underline-offset: 0.15em;
+        border-radius: var(--radius-small);
+      }
+    }
+    .inline-newsletter_done {
+      padding: var(--space-5);
+      border-radius: calc(var(--radius-main) * 2);
+      background: var(--background-2);
+    }
+    .inline-newsletter_done-title {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin: 0;
+      & svg {
+        flex: none;
+      }
+    }
+    .inline-newsletter_address {
+      overflow-wrap: anywhere;
+      color: var(--text);
+    }
+    .inline-newsletter_change {
+      margin-top: var(--space-3);
+      padding: 0;
+      border: 0;
+      border-radius: var(--radius-small);
+      background: none;
+      color: var(--text);
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 0.15em;
+    }
+    @keyframes inline-newsletter-spin {
+      to {
+        transform: rotate(1turn);
+      }
+    }
+  }
+</style>

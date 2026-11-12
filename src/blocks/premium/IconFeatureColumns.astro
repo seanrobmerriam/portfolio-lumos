@@ -1,0 +1,284 @@
+---
+import type { ComponentProps, HTMLAttributes } from "astro/types";
+import Section from "@/components/wrapper/Section.astro";
+import ContentWrapper from "@/components/wrapper/ContentWrapper.astro";
+import Heading from "@/components/typography/Heading.astro";
+import Paragraph from "@/components/typography/Paragraph.astro";
+import {
+  IconWorld,
+  IconBuildingBank,
+  IconLanguage,
+  IconUsers,
+  IconDeviceMobile,
+  IconShieldCheck,
+  IconArrowRight,
+} from "@tabler/icons-astro";
+
+const icons = {
+  globe: IconWorld,
+  landmark: IconBuildingBank,
+  languages: IconLanguage,
+  users: IconUsers,
+  smartphone: IconDeviceMobile,
+  shield: IconShieldCheck,
+};
+
+type Feature = {
+  title: string;
+  text: string;
+  icon: keyof typeof icons;
+};
+
+type Props = Pick<
+  ComponentProps<typeof Section>,
+  "render" | "theme" | "paddingTop" | "paddingBottom"
+> &
+  HTMLAttributes<"section"> & {
+    /** Eyebrow text. */
+    eyebrow?: string;
+    /** Heading text. */
+    heading?: string;
+    /** Heading level. */
+    headingTag?: ComponentProps<typeof Heading>["tag"];
+    /** Introductory text. */
+    description?: string;
+    /** Feature list. */
+    items?: Feature[];
+    /** Closing text. */
+    footerText?: string;
+    /** Link label. */
+    linkText?: string;
+    /** Link destination. */
+    linkHref?: string;
+  };
+
+const defaultItems: Feature[] = [
+  {
+    title: "One run, every country",
+    text: "Approve London, Lagos and Lisbon in a single payroll run. Each person is paid in their own currency on their local payday.",
+    icon: "globe",
+  },
+  {
+    title: "Taxes filed for you",
+    text: "Income tax, social security and pension contributions are worked out and filed with each authority before the deadline.",
+    icon: "landmark",
+  },
+  {
+    title: "Payslips people can read",
+    text: "Every payslip arrives in the employee's language and follows the format their country's law asks for.",
+    icon: "languages",
+  },
+  {
+    title: "Employees and contractors together",
+    text: "Pay salaried staff and monthly contractor invoices from the same screen, with one report for your accountant.",
+    icon: "users",
+  },
+  {
+    title: "Approve from your phone",
+    text: "Review the totals, see what changed since last month and approve the run from anywhere, in under a minute.",
+    icon: "smartphone",
+  },
+  {
+    title: "An answer for every audit",
+    text: "Every change to pay, bank details or tax codes is logged with who made it and when, and kept for seven years.",
+    icon: "shield",
+  },
+];
+
+const {
+  render = true,
+  eyebrow = "Brightpath payroll",
+  heading = "Pay a team in twelve countries like it lives in one",
+  headingTag = "h2",
+  description = "Brightpath runs payroll for employees and contractors in 92 countries, files the local taxes, and sends every payslip on time, in the person's own language.",
+  items = defaultItems,
+  footerText = "Also included: holiday tracking, expense refunds and 14 bank integrations.",
+  linkText = "See every feature",
+  linkHref = "#",
+  theme = "inherit",
+  paddingTop = "medium",
+  paddingBottom = "medium",
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+const headingId = `${id ?? `icon-feature-${crypto.randomUUID()}`}-title`;
+const visibleItems = items.filter(
+  (item) => item.title.trim() && item.text.trim(),
+);
+const itemHeadingTag =
+  `h${Math.min(Number(headingTag.slice(1)) + 1, 6)}` as NonNullable<
+    ComponentProps<typeof Heading>["tag"]
+  >;
+---
+
+<Section
+  render={render && Boolean(heading.trim()) && visibleItems.length > 0}
+  {theme}
+  {paddingTop}
+  {paddingBottom}
+  {id}
+  aria-labelledby={headingId}
+  class={className}
+  {...rest}
+>
+  <ContentWrapper centered>
+    {eyebrow.trim() && (
+      <p class="icon-feature-columns_eyebrow text-style-small">{eyebrow}</p>
+    )}
+    <Heading tag={headingTag} variant="h2" maxWidth={28} id={headingId}>
+      {heading}
+    </Heading>
+    <Paragraph
+      render={Boolean(description.trim())}
+      variant="large"
+      maxWidth={60}
+    >
+      {description}
+    </Paragraph>
+  </ContentWrapper>
+  <div class="icon-feature-columns_wrap">
+    <ul class="icon-feature-columns_list" role="list">
+      {visibleItems.map((item) => {
+        const FeatureIcon = icons[item.icon] ?? IconWorld;
+        return (
+          <li class="icon-feature-columns_item">
+            <span class="icon-feature-columns_well" aria-hidden="true">
+              <FeatureIcon size="1.25rem" stroke={1.75} />
+            </span>
+            <div class="icon-feature-columns_content">
+              <Heading tag={itemHeadingTag} variant="h6">
+                {item.title}
+              </Heading>
+              <p class="icon-feature-columns_text text-style-small">
+                {item.text}
+              </p>
+            </div>
+          </li>
+        );
+      })}
+    </ul>
+    {(footerText.trim() || (linkText.trim() && linkHref.trim())) && (
+      <div class="icon-feature-columns_footer">
+        {footerText.trim() && (
+          <p class="icon-feature-columns_note text-style-small">{footerText}</p>
+        )}
+        {linkText.trim() && linkHref.trim() && (
+          <a class="icon-feature-columns_link text-style-small" href={linkHref}>
+            {linkText}
+            <span class="icon-feature-columns_arrow" aria-hidden="true">
+              <IconArrowRight size="1em" stroke={1.75} />
+            </span>
+          </a>
+        )}
+      </div>
+    )}
+  </div>
+</Section>
+
+<style is:global>
+  @layer components {
+    .icon-feature-columns_wrap {
+      width: 100%;
+      @media (width >= 30rem) {
+        .icon-feature-columns_list {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .icon-feature-columns_item {
+          flex-direction: column;
+          gap: var(--space-4);
+        }
+        .icon-feature-columns_footer {
+          flex-direction: row;
+          justify-content: space-between;
+          text-align: start;
+        }
+      }
+      @media (width >= 64rem) {
+        .icon-feature-columns_list {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: var(--space-8) var(--space-7);
+        }
+      }
+    }
+    .icon-feature-columns_eyebrow {
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-2);
+    }
+    .icon-feature-columns_list {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-6) var(--space-5);
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+    .icon-feature-columns_item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-3);
+      min-width: 0;
+    }
+    .icon-feature-columns_well {
+      display: grid;
+      place-items: center;
+      flex: none;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: var(--radius-round);
+      background: var(--background-2);
+      color: var(--text);
+    }
+    .icon-feature-columns_content {
+      min-width: 0;
+    }
+    .icon-feature-columns_text {
+      margin: var(--space-1) 0 0;
+      color: var(--text-2);
+    }
+    .icon-feature-columns_footer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-3);
+      margin-top: var(--space-8);
+      padding-top: var(--space-5);
+      border-top: var(--border-width) solid var(--border);
+      text-align: center;
+    }
+    .icon-feature-columns_note {
+      margin: 0;
+      color: var(--text-2);
+    }
+    .icon-feature-columns_link {
+      display: inline-flex;
+      align-items: center;
+      flex: none;
+      gap: var(--space-1);
+      border-radius: var(--radius-small);
+      color: var(--link-text);
+      font-weight: var(--primary-medium);
+      text-decoration: none;
+      &:hover {
+        color: var(--link-text-hover);
+        .icon-feature-columns_arrow {
+          transform: translateX(0.125rem);
+        }
+      }
+      &:focus-visible {
+        outline: var(--focus-width) solid currentcolor;
+        outline-offset: var(--focus-offset);
+      }
+    }
+    .icon-feature-columns_arrow {
+      display: inline-flex;
+      flex: none;
+      transition: transform 0.2s ease;
+      @media (prefers-reduced-motion: reduce) {
+        transition: none;
+      }
+    }
+  }
+</style>

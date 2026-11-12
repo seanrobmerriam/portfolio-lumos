@@ -1,0 +1,309 @@
+---
+import type { ComponentProps, HTMLAttributes } from "astro/types";
+import type Section from "@/components/wrapper/Section.astro";
+import { IconCopy, IconCheck, IconX } from "@tabler/icons-astro";
+
+type Props = HTMLAttributes<"div"> &
+  Pick<ComponentProps<typeof Section>, "render" | "theme"> & {
+    /** Offer text. */
+    offer?: string;
+    /** Discount code. */
+    code?: string;
+    /** CSS selector for the element focused after dismissal. Defaults to the next available control. */
+    dismissFocusTarget?: string;
+  };
+const {
+  render = true,
+  offer = "15% off your first order",
+  code = "FIRSTPOUR",
+  dismissFocusTarget,
+  theme = "inherit",
+  class: className,
+  ...rest
+} = Astro.props;
+---
+
+{render && offer.trim() && code.trim() && (
+  <div
+    class:list={[
+      "promo-code-bar_wrap",
+      theme === "inherit" ? "theme-dark theme-invert" : `theme-${theme}`,
+      className,
+    ]}
+    role="region"
+    aria-label="Offer"
+    data-promo-code-bar
+    data-focus-target={dismissFocusTarget}
+    {...rest}
+  >
+    <div class="promo-code-bar_layout">
+      <span class="promo-code-bar_balance" aria-hidden="true"></span>
+      <div class="promo-code-bar_content">
+        <p class="promo-code-bar_offer text-style-small">
+          <strong>{offer}</strong>{" "}
+          <span class="promo-code-bar_hint">with the code</span>
+        </p>
+        <div class="promo-code-bar_actions">
+          <code class="promo-code-bar_code">{code}</code>
+          <button
+            type="button"
+            class="promo-code-bar_copy"
+            data-copy
+            aria-label="Copy code"
+          >
+            <span class="promo-code-bar_idle">
+              <IconCopy size="1.1em" stroke={1.75} aria-hidden="true" />
+              Copy
+            </span>
+            <span class="promo-code-bar_done" aria-hidden="true">
+              <IconCheck size="1.1em" stroke={1.75} aria-hidden="true" />
+              Copied
+            </span>
+          </button>
+        </div>
+      </div>
+      <button
+        type="button"
+        class="promo-code-bar_close"
+        data-dismiss
+        aria-label="Dismiss offer"
+      >
+        <IconX size="1.1em" stroke={1.75} aria-hidden="true" />
+      </button>
+    </div>
+    <p class="promo-code-bar_status" role="status" aria-atomic="true"></p>
+    <input
+      class="promo-code-bar_field"
+      type="text"
+      readonly
+      tabindex="-1"
+      aria-label="Discount code"
+      value={code}
+    />
+  </div>
+)}
+
+<script>
+  function initPromoCodeBars() {
+    document
+      .querySelectorAll<HTMLElement>("[data-promo-code-bar]")
+      .forEach((root) => {
+        if (root.dataset.initialized) return;
+        root.dataset.initialized = "true";
+        const copy = root.querySelector<HTMLButtonElement>("[data-copy]")!;
+        const close = root.querySelector<HTMLButtonElement>("[data-dismiss]")!;
+        const input = root.querySelector<HTMLInputElement>("input")!;
+        const status = root.querySelector<HTMLElement>('[role="status"]')!;
+        let timer: ReturnType<typeof setTimeout>;
+        let copying = false;
+        const fallbackCopy = () => {
+          input.focus({ preventScroll: true });
+          input.select();
+          input.setSelectionRange(0, input.value.length);
+          try {
+            return document.execCommand("copy");
+          } catch {
+            return false;
+          }
+        };
+        copy.addEventListener("click", async () => {
+          if (copying) return;
+          copying = true;
+          clearTimeout(timer);
+          status.textContent = "";
+          let success = false;
+          try {
+            if (navigator.clipboard?.writeText) {
+              await navigator.clipboard.writeText(input.value);
+              success = true;
+            } else success = fallbackCopy();
+          } catch {
+            success = fallbackCopy();
+          }
+          copying = false;
+          if (root.hidden || !root.isConnected) return;
+          if (document.activeElement === input)
+            copy.focus({ preventScroll: true });
+          copy.toggleAttribute("data-copied", success);
+          copy.setAttribute("aria-label", success ? "Copied" : "Copy code");
+          status.textContent = success
+            ? `Code ${input.value} copied.`
+            : `Could not copy. Select and copy the code ${input.value} manually.`;
+          timer = setTimeout(() => {
+            copy.removeAttribute("data-copied");
+            copy.setAttribute("aria-label", "Copy code");
+            status.textContent = "";
+          }, 2000);
+        });
+        close.addEventListener("click", () => {
+          clearTimeout(timer);
+          const available = (element: HTMLElement) =>
+            !root.contains(element) &&
+            !element.closest('[hidden], [inert], [aria-hidden="true"]') &&
+            !element.matches(":disabled") &&
+            element.getClientRects().length > 0;
+          let target: HTMLElement | undefined;
+          try {
+            const requested =
+              root.dataset.focusTarget &&
+              document.querySelector<HTMLElement>(root.dataset.focusTarget);
+            if (requested && available(requested)) target = requested;
+          } catch {}
+          const controls = Array.from(
+            document.querySelectorAll<HTMLElement>(
+              "a[href], button, input, select, textarea, [tabindex]",
+            ),
+          ).filter((element) => available(element) && element.tabIndex >= 0);
+          target ??= controls.find((element) =>
+            Boolean(
+              root.compareDocumentPosition(element) &
+              Node.DOCUMENT_POSITION_FOLLOWING,
+            ),
+          );
+          target ??=
+            controls[0] ??
+            Array.from(document.querySelectorAll<HTMLElement>("h1, main")).find(
+              available,
+            );
+          root.hidden = true;
+          if (target) {
+            if (!target.hasAttribute("tabindex") && target.tabIndex < 0) {
+              target.setAttribute("tabindex", "-1");
+              target.addEventListener(
+                "blur",
+                () => target?.removeAttribute("tabindex"),
+                { once: true },
+              );
+            }
+            target.focus({ preventScroll: true });
+          }
+        });
+      });
+  }
+  initPromoCodeBars();
+  document.addEventListener("astro:page-load", initPromoCodeBars);
+</script>
+
+<style is:global>
+  @layer components {
+    .promo-code-bar_wrap {
+      background: var(--background);
+      color: var(--text);
+      padding-block: var(--space-1);
+      &[hidden] {
+        display: none;
+      }
+      @media (width >= 30rem) {
+        .promo-code-bar_balance {
+          display: block;
+        }
+        .promo-code-bar_content {
+          justify-content: center;
+          text-align: center;
+        }
+      }
+    }
+    .promo-code-bar_layout {
+      width: var(--site-width);
+      max-width: var(--max-width-main);
+      margin-inline: auto;
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .promo-code-bar_balance {
+      display: none;
+      flex: 0 0 2rem;
+    }
+    .promo-code-bar_content {
+      min-width: 0;
+      flex: 1;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-1) var(--space-2);
+    }
+    .promo-code-bar_offer {
+      margin: 0;
+    }
+    .promo-code-bar_hint {
+      color: var(--text-2);
+    }
+    .promo-code-bar_actions {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+    }
+    .promo-code-bar_code {
+      min-width: 0;
+      overflow-wrap: anywhere;
+      padding: 0.3em 0.75em;
+      border: var(--border-width) dashed var(--text-2);
+      border-radius: var(--radius-small);
+      font-size: 0.8125rem;
+      letter-spacing: 0.05em;
+    }
+    .promo-code-bar_copy,
+    .promo-code-bar_close {
+      min-height: 2rem;
+      border: var(--border-width) solid var(--border);
+      border-radius: var(--radius-small);
+      background: var(--background-2);
+      color: var(--text);
+      font: inherit;
+      font-size: 0.8125rem;
+      cursor: pointer;
+      &:hover {
+        background: var(--background-3);
+      }
+      &:focus-visible {
+        outline: var(--focus-width) solid var(--text);
+        outline-offset: var(--focus-offset);
+      }
+    }
+    .promo-code-bar_copy {
+      flex-shrink: 0;
+      display: inline-grid;
+      place-items: center;
+      padding: 0.3em 0.9em;
+    }
+    .promo-code-bar_idle,
+    .promo-code-bar_done {
+      grid-area: 1 / 1;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4em;
+    }
+    .promo-code-bar_done {
+      visibility: hidden;
+    }
+    .promo-code-bar_copy[data-copied] .promo-code-bar_idle {
+      visibility: hidden;
+    }
+    .promo-code-bar_copy[data-copied] .promo-code-bar_done {
+      visibility: visible;
+    }
+    .promo-code-bar_close {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 2rem;
+      padding: 0;
+      border-color: transparent;
+      background: transparent;
+    }
+    .promo-code-bar_status,
+    .promo-code-bar_field {
+      position: absolute;
+      width: 0.0625rem;
+      height: 0.0625rem;
+      padding: 0;
+      margin: -0.0625rem;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+      border: 0;
+    }
+  }
+</style>

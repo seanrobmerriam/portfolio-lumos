@@ -1,0 +1,226 @@
+---
+import type { ComponentProps, HTMLAttributes } from "astro/types";
+import Section from "@/components/wrapper/Section.astro";
+import ContentWrapper from "@/components/wrapper/ContentWrapper.astro";
+import Heading from "@/components/typography/Heading.astro";
+import Paragraph from "@/components/typography/Paragraph.astro";
+import Button from "@/components/Button.astro";
+import ButtonWrapper from "@/components/wrapper/ButtonWrapper.astro";
+import {
+  IconArrowRight,
+  IconClock,
+  IconMapPin,
+  IconPhone,
+} from "@tabler/icons-astro";
+
+type Feature = { text: string; icon: "clock" | "location" | "phone" };
+type Props = Pick<
+  ComponentProps<typeof Section>,
+  "render" | "theme" | "paddingTop" | "paddingBottom"
+> &
+  HTMLAttributes<"section"> & {
+    /** Eyebrow text. */
+    eyebrow?: string;
+    /** Section heading. */
+    heading?: string;
+    /** Introductory paragraphs. */
+    paragraphs?: string[];
+    /** Membership benefits. */
+    features?: Feature[];
+    /** Story link label. */
+    storyLabel?: string;
+    /** Story link destination. */
+    storyHref?: string;
+    /** Workspace photo URL. */
+    photoSrc?: string;
+    /** Workspace photo alternative text. */
+    photoAlt?: string;
+    /** Workspace photo caption. */
+    caption?: string;
+  };
+const {
+  render = true,
+  eyebrow = "About Atrium",
+  heading = "Built for the work between meetings",
+  paragraphs = [
+    "Atrium started in 2017 with one floor above a bakery in Lisbon and a simple idea: most people do their best work at a long table with good light, decent coffee and a quiet room nearby when a call comes in.",
+    "Today we run 23 spaces in 11 cities, from Porto to Tallinn. Each one has the same three things: open tables for focus, phone booths you can book by the hour, and meeting rooms with a screen that simply works.",
+  ],
+  features = [
+    { text: "Open from 07:00 to 22:00, every day of the year", icon: "clock" },
+    {
+      text: "One membership, a desk in any of our 11 cities",
+      icon: "location",
+    },
+    { text: "Phone booths and rooms booked from the app", icon: "phone" },
+  ],
+  storyLabel = "Read the Atrium story",
+  storyHref = "#",
+  photoSrc = "https://readymadeui.com/images/about-image-1.webp",
+  photoAlt = "People working on laptops along a long wooden table in a bright, plant-filled workspace",
+  caption = "Members at the long table in Atrium Príncipe Real, Lisbon.",
+  theme = "inherit",
+  paddingTop = "medium",
+  paddingBottom = "medium",
+  id = `split-text-photo-${crypto.randomUUID()}`,
+  class: className,
+  ...rest
+} = Astro.props;
+const icons = { clock: IconClock, location: IconMapPin, phone: IconPhone };
+const visibleFeatures = features.filter((feature) => feature.text.trim());
+---
+
+<Section
+  render={render && !!heading.trim() && !!photoSrc.trim()}
+  {theme}
+  {paddingTop}
+  {paddingBottom}
+  {id}
+  class={className}
+  aria-labelledby={`${id}-title`}
+  {...rest}
+>
+  <ContentWrapper variant="columns">
+    <div class="split-text-photo_wrap">
+      {eyebrow.trim() && <p class="split-text-photo_eyebrow">{eyebrow}</p>}
+      <Heading tag="h2" variant="h3" id={`${id}-title`}>
+        {heading}
+      </Heading>
+      <div class="split-text-photo_body">
+        {paragraphs
+          .filter((paragraph) => paragraph.trim())
+          .map((paragraph) => (
+            <Paragraph>{paragraph}</Paragraph>
+          ))}
+      </div>
+      {visibleFeatures.length > 0 && (
+        <ul class="split-text-photo_features" role="list">
+          {visibleFeatures.map((feature) => {
+            const Mark = icons[feature.icon];
+            return (
+              <li class="split-text-photo_feature">
+                <span class="split-text-photo_icon" aria-hidden="true">
+                  <Mark size="1em" stroke={1.75} />
+                </span>
+                <span>{feature.text}</span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      <ButtonWrapper>
+        <Button
+          render={!!storyLabel.trim() && !!storyHref.trim()}
+          element="link"
+          variant="link"
+          href={storyHref}
+          class="text-style-small"
+        >
+          <span class="split-text-photo_action-label">
+            {storyLabel}
+            <IconArrowRight size="1em" stroke={1.75} aria-hidden="true" />
+          </span>
+        </Button>
+      </ButtonWrapper>
+    </div>
+    <figure slot="column2" class="split-text-photo-figure_wrap">
+      <div class="split-text-photo-figure_photo">
+        <img
+          class="split-text-photo-figure_image"
+          src={photoSrc}
+          alt={photoAlt}
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+      {caption.trim() && (
+        <figcaption class="split-text-photo-figure_caption">
+          <span class="split-text-photo-figure_marker" aria-hidden="true">
+            <IconMapPin size="1em" stroke={1.75} />
+          </span>
+          <span>{caption}</span>
+        </figcaption>
+      )}
+    </figure>
+  </ContentWrapper>
+</Section>
+
+<style is:global>
+  @layer components {
+    .split-text-photo_wrap {
+      width: 100%;
+      max-width: 60ch;
+      min-width: 0;
+      color: var(--text);
+    }
+    .split-text-photo_body {
+      color: var(--text-2);
+    }
+    .split-text-photo_eyebrow {
+      margin: 0;
+      color: var(--text-2);
+      font-family: ui-monospace, monospace;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+    }
+    .split-text-photo_features {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      margin: var(--space-5) 0 0;
+      padding: 0;
+      list-style: none;
+      color: var(--text);
+      font-size: var(--text-small);
+    }
+    .split-text-photo_feature {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    .split-text-photo_icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      width: 2rem;
+      height: 2rem;
+      border-radius: var(--radius-small);
+      background: var(--background-2);
+    }
+    .split-text-photo_action-label {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+    }
+    .split-text-photo-figure_wrap {
+      width: 100%;
+      margin: 0;
+    }
+    .split-text-photo-figure_photo {
+      aspect-ratio: 4 / 3;
+      overflow: hidden;
+      border-radius: var(--radius-main);
+      background: var(--background-2);
+    }
+    .split-text-photo-figure_image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .split-text-photo-figure_caption {
+      display: flex;
+      align-items: start;
+      gap: var(--space-2);
+      margin-top: var(--space-3);
+      color: var(--text-2);
+      font-size: var(--text-small);
+    }
+    .split-text-photo-figure_marker {
+      display: inline-flex;
+      flex-shrink: 0;
+      margin-top: 0.2em;
+    }
+  }
+</style>
