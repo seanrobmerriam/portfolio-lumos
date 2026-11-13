@@ -162,6 +162,7 @@ const visiblePosts: Post[] = posts.filter(
       }
       @media (width >= 64rem) {
         grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+        column-gap: calc(var(--space-8) + var(--space-4));
         & .post-thumbnails_intro {
           position: sticky;
           top: calc(var(--nav-height) + var(--space-5));
