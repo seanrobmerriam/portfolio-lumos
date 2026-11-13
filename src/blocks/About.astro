@@ -2,224 +2,96 @@
 import NoteHandwritten from "@/components/content/NoteHandwritten.astro";
 import Section from "@/components/wrapper/Section.astro";
 import Heading from "@/components/typography/Heading.astro";
-import Eyebrow from "@/components/typography/Eyebrow.astro";
 import ContentWrapper from "@/components/wrapper/ContentWrapper.astro";
 import Paragraph from "@/components/typography/Paragraph.astro";
 
-const sectionLabelClass =
-  "background-yellow angled-text-right-1 emphasis font-figtree padding-inline-2 padding-block-3 margin-top-3 text-wrap-nowrap";
+const TOOLS = [
+  "Rust",
+  "Erlang",
+  "TypeScript",
+  "Go",
+  "WebAssembly",
+  "Astro",
+  "React",
+  "PostgreSQL",
+  "Docker",
+];
 ---
 
-<Section id="about" fullHeight={true}>
+<Section id="about">
   <ContentWrapper>
-    <Heading
-      tag="h2"
-      class="radius-small background-yellow angled-text-right-2 emphasis font-quicksand padding-inline-2 padding-block-2 margin-top-3 text-wrap-nowrap drop-shadow-text"
-    >
-      a little about me
-    </Heading>
+    <Heading tag="h2" class="heading-label">a little about me</Heading>
   </ContentWrapper>
   <ContentWrapper variant="columns">
     <NoteHandwritten
       slot="column2"
       text="The person designing it is the person building it."
     />
-    <div class="feature_tile">
-      <Paragraph variant="main" maxWidth={70} class="h3">
-        I’m Sean. I design and build digital products — from high traffic,
-        content-driven websites and high performance web applications to native,
-        local-first software built with Rust and Erlang.
+    <div class="about_tile about_tools" slot="column2">
+      <h3 class="about_title text-style-h5">Tools I reach for</h3>
+      <ul class="about_list text-style-small">
+        {TOOLS.map((item) => (
+          <li>{item}</li>
+        ))}
+      </ul>
+    </div>
+    <div class="about_tile">
+      <Paragraph variant="main" class="margin-bottom-2">
+        I’m Sean. I design and build digital products: content-heavy websites,
+        fast web applications and native, local-first software in Rust and
+        Erlang.
       </Paragraph>
-
-      <Paragraph variant="main" maxWidth={70}>
-        {" "}
-        My work connects the visual details with the code behind them: how
-        content reads, how an interaction feels and how easily a product can
-        grow. I enjoy moving between design and development, working through an
-        idea until it feels right and works well in someone’s hands.
+      <Paragraph variant="large">
+        I started out in software engineering and kept getting pulled toward
+        the details that make a product feel finished: how the content reads,
+        how an interaction responds, how easily the whole thing can grow.
+        That’s how I ended up a design engineer.
       </Paragraph>
-      <Paragraph variant="main" maxWidth={70}>
-        {" "}
-        I come from a background of software engineering, but I also care deeply
-        about the details that make a product feel polished and intuitive, which
-        has led me to my current role as a design engineer. My work features the
-        rigor of traditional software engineering practices with the benefit of
-        a design-first approach. I never hand off a design to a separate team; I
-        build it myself. This often comes with longer lead times, but leads to
-        more cohesive, polished products that are easy to maintain and evolve.
+      <Paragraph variant="large">
+        I don’t hand a design off to a separate team; I build it myself. That
+        can take a little longer up front, but less gets lost in translation,
+        and the result holds together and stays easy to maintain.
       </Paragraph>
-      <Paragraph variant="main" maxWidth={60}>
-        Whether I’m working on the web or native applications, I care about
-        software that is clear to use and understandable to the people
-        maintaining it. I can help shape an early idea, carry a design through
-        development or join your team where you need an extra pair of hands.
+      <Paragraph variant="large">
+        I can help shape an early idea, carry a design through development or
+        join your team where you need an extra pair of hands.
       </Paragraph>
     </div>
   </ContentWrapper>
 </Section>
 
-<style>
-  .drop-shadow-text {
-    /* Syntax: offset-x | offset-y | blur-radius | color */
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-  }
-
-  .font-dosis {
-    font-family: var(--font-primary);
-  }
-
-  .font-comfortaa {
-    font-family: var(--font-primary);
-  }
-
-  .font-be-vietnam-pro {
-    font-family: var(--font-primary);
-  }
-
-  .font-crimson-pro {
-    font-family: var(--font-primary);
-  }
-
-  .font-bitter {
-    font-family: var(--font-primary);
-  }
-
-  .font-cairo {
-    font-family: var(--font-primary);
-  }
-
-  .font-opendyslexic {
-    font-family: var(--font-primary);
-  }
-
-  .font-lexend {
-    font-family: var(--font-primary);
-  }
-
-  .font-quicksand {
-    font-family: var(--heading-family);
-  }
-
-  .font-baskervville {
-    font-family: var(--font-primary);
-  }
-
-  .font-allan {
-    font-family: var(--font-primary);
-  }
-
-  .font-sono {
-    font-family: var(--font-primary);
-  }
-
-  .font-dseg7-classic {
-    font-family: var(--font-primary);
-  }
-
-  .font-londrina-solid {
-    font-family: var(--font-primary);
-    font-weight: 300;
-  }
-
-  .font-hachi-maru-pop {
-    font-family: var(--font-primary);
-  }
-
-  .font-rubik-dirt {
-    font-family: var(--font-primary);
-  }
-
-  .font-syncopate {
-    font-family: var(--font-primary);
-  }
-
-  .font-monoton {
-    font-family: var(--font-primary);
-  }
-
-  .font-honk {
-    font-family: var(--font-primary);
-  }
-
-  .font-bowlby-one-sc {
-    font-family: var(--font-primary);
-  }
-
-  .font-lilita-one {
-    font-family: var(--font-primary);
-  }
-
-  .font-dela-gothic-one {
-    font-family: var(--font-primary);
-  }
-
-  .font-grandstander {
-    font-family: var(--font-primary);
-  }
-
-  .font-yanone-kaffeesatz {
-    font-family: var(--font-primary);
-  }
-
-  .font-bangers {
-    font-family: var(--font-primary);
-  }
-
-  .font-luckiest-guy {
-    font-family: var(--font-primary);
-  }
-
-  .font-urbanist {
-    font-family: var(--font-primary);
-  }
-
-  .font-anton {
-    font-family: var(--font-primary);
-  }
-
-  p {
-    margin-block: 1.5rem;
-    font-family: var(--font-primary);
-    font-size: clamp(
-      1.6rem,
-      1.5vw,
-      1.9rem
-    ); /* Adjust font size based on viewport width */
-    line-height: 1.4; /* Adjust line height for readability */
-  }
-
-  h3 {
-    font-family: var(--font-primary);
-    font-size: clamp(
-      1.8rem,
-      2vw,
-      2.5rem
-    ); /* Adjust font size based on viewport width */
-    line-height: 1.3; /* Adjust line height for readability */
-  }
-  .dropcap__margin {
-    margin-inline-end: 0.1em;
-  }
-
-  .feature_tile {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    padding: var(--space-4);
-    background: var(--color-white);
-    border: var(--border-width) solid var(--color-black);
-    border-radius: calc(var(--radius-main) * 1.5);
-    color: var(--text);
-    text-shadow: none;
-    box-shadow: 10px 10px 2px 1px rgba(18, 18, 18, 0.2);
-  }
-  .tile-yellow {
-    background-color: var(--color-yellow);
-    padding: 0.3em;
-    vertical-align: middle;
-    color: #000000;
-    border-radius: var(--radius-small);
-    border: var(--border-width) solid var(--color-black);
-    box-shadow: 10px 10px 2px 1px rgba(18, 18, 18, 0.2);
+<style is:global>
+  @layer components {
+    .about_tile {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      padding: var(--space-5);
+      background: var(--color-white);
+      border: var(--border-width) solid var(--color-black);
+      border-radius: calc(var(--radius-main) * 1.5);
+      color: var(--text);
+      box-shadow: 10px 10px 2px 1px rgba(18, 18, 18, 0.2);
+      &.about_tools {
+        margin-top: var(--space-6);
+      }
+    }
+    .about_title {
+      margin: 0;
+    }
+    .about_list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin: var(--space-3) 0 0;
+      padding: 0;
+      list-style: none;
+      color: var(--text-2);
+      & li {
+        padding: 0.15em 0.65em;
+        border: var(--border-width) solid var(--border);
+        border-radius: var(--radius-round);
+      }
+    }
   }
 </style>

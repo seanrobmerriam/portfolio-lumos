@@ -166,6 +166,17 @@
   font-weight: inherit;
 }
 
+.heading-label {
+  align-self: start;
+  padding: var(--space-3) var(--space-2);
+  background-color: var(--color-yellow);
+  color: var(--color-black);
+  font-family: var(--heading-family);
+  text-shadow: 0.125rem 0.125rem 0.25rem rgb(0 0 0 / 0.5);
+  text-wrap: nowrap;
+  rotate: -2deg;
+}
+
 .display-contents {
   display: contents;
   align-items: inherit;

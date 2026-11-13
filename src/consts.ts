@@ -2,7 +2,7 @@
 export const SITE_NAME = "Sean Merriam - Design Engineer";
 /** Fallback meta description for pages that don't set their own. */
 export const SITE_DESCRIPTION =
-  "The personal site of Sean Merriam.";
+  "Sean Merriam is a design engineer who designs and builds websites, web applications and native software, from first idea to finished product.";
 /** Canonical origin. Resolves canonical URLs, social images, and the sitemap. */
 export const SITE_URL = "https://seanrobmerriam.github.io";
 /** BCP 47 locale tag used to format dates and numbers. */
@@ -12,39 +12,33 @@ export const NOINDEX_ROUTES: string[] = ["/404", "/admin", "/auth/sign-in"];
 
 export const SERVICES = [
   {
-    heading: "LLM Integrations",
-    text: "Put language models to work at every step of the software development lifecycle, from research to deployment.",
-    layout: "preview",
-    items: ["Search and answers grounded in your content", "Document processing and structured extraction", "Model evaluation and integration"],
-  },
-  {
     heading: "Design",
-    text: "Turn an early idea into a clear, usable interface, with a visual direction you can carry through to the finished product.",
-    layout: "rollback",
+    text: "Turn an early idea into a clear, usable interface, with a visual direction that survives all the way to launch.",
     items: ["User journeys and information architecture", "Interface design and interactive prototypes", "Responsive layouts and interaction details"],
   },
   {
     heading: "Web Development",
-    text: "Build fast websites and web applications with reusable components and code your team can maintain.",
-    layout: "",
+    text: "Fast websites and web applications, built from reusable components and code your team can maintain.",
     items: ["Astro websites and web applications", "CMS and API integrations", "Accessibility and performance"],
   },
   {
+    heading: "Brand Systems",
+    text: "A practical foundation for your visual identity, so every new page and feature looks like it belongs.",
+    items: ["Typography and color systems", "Design tokens and component libraries", "Usage guidelines and documentation"],
+  },
+  {
     heading: "Site Migrations",
-    text: "Move from Webflow, WordPress or another platform with a plan for your content, URLs and publishing workflow.",
-    layout: "",
+    text: "Move off Webflow, WordPress or another platform with a plan for your content, URLs and publishing workflow.",
     items: ["Content audits and migration planning", "Page rebuilds and redirects", "CMS setup and editor handover"],
   },
   {
-    heading: "Agent Workflows",
-    text: "Set up agents to help with development and repetitive work, with review steps that fit the way your team ships.",
-    layout: "wide",
-    items: ["Project instructions and tool connections", "Development and review workflows", "Checks, evaluations and human approval"],
+    heading: "LLM Integrations",
+    text: "Add language models to your product where they earn their place, with answers grounded in your own content.",
+    items: ["Search and answers grounded in your content", "Document processing and structured extraction", "Model evaluation and integration"],
   },
   {
-    heading: "Brand Systems",
-    text: "Give your visual identity a practical foundation so every new page and product feature feels like part of the same brand.",
-    layout: "wide",
-    items: ["Typography and color systems", "Design tokens and component libraries", "Usage guidelines and documentation"],
+    heading: "Agent Workflows",
+    text: "Put agents to work on development and repetitive tasks, with review steps that fit the way your team ships.",
+    items: ["Project instructions and tool connections", "Development and review workflows", "Checks, evaluations and human approval"],
   },
 ];

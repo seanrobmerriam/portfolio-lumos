@@ -14,24 +14,20 @@ import Modal from "@/components/interactive/Modal.astro";
 import { NEON_FUNCTION_CONTACT_BASE_URL } from "astro:env/client";
 import ContentWrapper from "@/components/wrapper/ContentWrapper.astro";
 
-const sectionLabelClass =
-  "drop-shadow-text background-yellow angled-text-right-1 emphasis font-quicksand padding-inline-2 padding-block-3 margin-top-3 text-wrap-nowrap";
 ---
   <Section id="contact" fullHeight={true}>
     <ContentWrapper
     variant="columns"
     >
-    <Heading tag="h2" class={sectionLabelClass}>
-      let’s talk
-    </Heading>
-    <Paragraph variant="h4" class="font-figtree margin-block-4">
+    <Heading tag="h2" class="heading-label">let’s talk</Heading>
+    <Paragraph variant="h4" class="font-figtree margin-top-6 margin-bottom-4">
       Have something in mind? Let’s work out what it needs.
     </Paragraph>
-    <Paragraph maxWidth={50} class="margin-block-4">
-      Tell me what you’re building, what’s getting in the way and any timing
-      you’re working toward. Links and rough ideas are welcome.
+    <Paragraph maxWidth={50} class="margin-bottom-6">
+      Tell me what you’re building, what’s getting in the way and any deadline
+      you’re working toward.
     </Paragraph>
-    <NoteHandwritten slot="column2" variant="margin" text="No perfect brief needed. Your site URL and a few thoughts are enough." />
+    <NoteHandwritten slot="column2" variant="margin" text="No perfect brief needed. A link and a few rough thoughts are enough." />
     <Form
       name="contact"
       action={NEON_FUNCTION_CONTACT_BASE_URL}
@@ -39,13 +35,13 @@ const sectionLabelClass =
     >
       <Fieldset legend="Your details" legendStyle="hidden">
         <Grid medium={2}>
-          <Input variant="first-name" name="first_name" required />
-          <Input variant="last-name" name="last_name" required />
+          <Input variant="first-name" name="first_name" label="First name" placeholder="" required />
+          <Input variant="last-name" name="last_name" label="Last name" placeholder="" required />
         </Grid>
         <Input
           variant="email"
           name="email"
-          label="Your email"
+          label="Email"
           placeholder="you@company.com"
           required
         />
@@ -57,7 +53,7 @@ const sectionLabelClass =
         />
       </Fieldset>
       <ButtonWrapper marginTop="1">
-        <Button class="background-yellow" emphasis="primary" element="button" type="submit">Send your message</Button>
+        <Button class="background-yellow" emphasis="primary" element="button" type="submit">Send message</Button>
       </ButtonWrapper>
     </Form>
     </ContentWrapper>

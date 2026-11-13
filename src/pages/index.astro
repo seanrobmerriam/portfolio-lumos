@@ -8,9 +8,7 @@ import FAQ from "@/blocks/FAQ.astro";
 import Contact from "@/blocks/Contact.astro";
 import Bento from "@/blocks/Bento.astro";
 import Links from "@/blocks/Links.astro";
-import Blog from "@/blocks/Blog.astro";
-import AboutLong from "@/blocks/AboutLong.astro";
-import ContentWrapper from "@/components/wrapper/ContentWrapper.astro";
+import BlogCards from "@/blocks/BlogCards.astro";
 ---
 
 <Layout
@@ -20,9 +18,9 @@ import ContentWrapper from "@/components/wrapper/ContentWrapper.astro";
 >
   <Hero />
 
-  <Bento />
+  <Bento id="services" />
   <About />
-  <Blog />
+  <BlogCards id="writing" />
   <Links />
   <Contact />
 </Layout>

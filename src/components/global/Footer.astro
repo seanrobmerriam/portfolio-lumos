@@ -1,7 +1,4 @@
 ---
-import Icon from "@/components/media/Icon.astro";
-import logo from "@/assets/logo/logo.svg";
-import { SITE_NAME } from "@/consts.ts";
 
 interface Props {
   /** Set to `false` to omit the component. */
@@ -9,34 +6,38 @@ interface Props {
 }
 
 const { render = true } = Astro.props;
+const links = [
+  { href: "/#services", label: "Services" },
+  { href: "/#about", label: "About" },
+  { href: "/blog/", label: "Writing" },
+  { href: "/#contact", label: "Contact" },
+  { href: "https://github.com/seanrobmerriam", label: "GitHub" },
+];
 ---
 
 {render && (
   <footer class="footer_wrap">
     <div class="footer_inner">
       <div class="footer_top">
-        <a class="footer_logo" href="/" aria-label={SITE_NAME}>
-          <Icon src={logo} variant="full-width" />
+        <a class="footer_logo text-style-h5" href="/">
+          Sean Merriam
         </a>
         <nav aria-label="Footer">
           <ul class="footer_links">
-            <li>
-              <a class="footer_link" href="/">
-                Home
-              </a>
-            </li>
-            <li>
-              <a class="footer_link" href="/example-components">
-                Example Components
-              </a>
-            </li>
+            {links.map(({ href, label }) => (
+              <li>
+                <a class="footer_link" href={href}>
+                  {label}
+                </a>
+              </li>
+            ))}
           </ul>
         </nav>
       </div>
       <div class="footer_bottom">
         <p class="footer_copyright text-style-small">
-          &copy; <span id="year">{new Date().getFullYear()}</span>&#160;
-          {SITE_NAME}
+          &copy; <span id="year">{new Date().getFullYear()}</span>&#160;Sean
+          Merriam. Designed and built by the same person.
         </p>
       </div>
     </div>
@@ -81,8 +82,9 @@ const { render = true } = Astro.props;
 
     .footer_logo {
       display: block;
-      width: 7.5rem;
-      max-width: 100%;
+      margin: 0;
+      color: var(--text);
+      text-decoration: none;
       transition: opacity var(--hover-duration) var(--hover-ease);
       @media (hover: hover) {
         &:hover {
