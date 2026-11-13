@@ -3,6 +3,8 @@ import Icon from "@/components/media/Icon.astro";
 import NavLink from "@/components/global/NavLink.astro";
 import logo from "@/assets/logo/logo.svg";
 import { SITE_NAME } from "@/consts.ts";
+import Heading from "../typography/Heading.astro";
+import Paragraph from "../typography/Paragraph.astro";
 
 interface Props {
   /** Set to `false` to omit the component. */
@@ -27,7 +29,7 @@ const navLinks = [
   <header class:list={["nav_wrap", overlap && "overlap"]}>
     <div class="nav_inner">
       <a class="nav_logo" href="/" aria-label={SITE_NAME}>
-        <Icon src={logo} variant="medium" />
+       Sean Merriam
       </a>
       <button
         class="nav_toggle"
@@ -143,7 +145,8 @@ const navLinks = [
     .nav_logo {
       display: flex;
       align-items: center;
-      width: 6.7rem;
+      line-clamp: 1;
+      width: 12rem;
       transition: opacity var(--hover-duration) var(--hover-ease);
       @media (hover: hover) {
         &:hover {

@@ -4,13 +4,10 @@ import Heading from "@/components/typography/Heading.astro";
 import Eyebrow from "@/components/typography/Eyebrow.astro";
 import ContentWrapper from "@/components/wrapper/ContentWrapper.astro";
 ---
- <Section paddingBottom="small" paddingTop="large" gap="4" fullHeight={true}>
-    <ContentWrapper>
 
-      <div class="hero-tile">
-      <Eyebrow tag="span" fontFamily="primary">
-        Sean Merriam
-      </Eyebrow>
+<Section paddingBottom="small" paddingTop="large" gap="4" fullHeight={true}>
+  <ContentWrapper>
+    <div class="hero-tile">
       <Heading
         variant="display"
         tag="h1"
@@ -18,75 +15,75 @@ import ContentWrapper from "@/components/wrapper/ContentWrapper.astro";
       >
         Design Engineer
       </Heading>
-      </div>
-    </ContentWrapper>
-    <div class="flex-horizontal-nowrap align-items-start gap-4">
-      <Heading
-        variant="h3"
-        tag="h2"
-        class="drop-shadow-text particle flex-noshrink border-2"
-      >
-        noun
-      </Heading>
+    </div>
+  </ContentWrapper>
+  <div class="flex-horizontal-nowrap align-items-start gap-4">
+    <Heading
+      variant="h3"
+      tag="h2"
+      class="drop-shadow-text tile-yellow flex-noshrink border-2"
+    >
+      noun
+    </Heading>
 
-      <Heading maxWidth={60} variant="h4" tag="h3" class="drop-shadow-text">
-        A person who combines both{" "}
-        <span class="emphasis hero-emphasis angled-text-left-2 background-dark-green text-color-white border-2">design</span>{" "}
-        and{" "}
-        <span class="emphasis hero-emphasis angled-text-right-1 background-dark-blue text-color-white border-2">
+    <Heading maxWidth={60} variant="h4" tag="h3" class="drop-shadow-text">
+      A person who combines both{" "}
+      <span class="emphasis hero-emphasis angled-text-left-2 background-dark-green text-color-white border-2">
+        design
+      </span>{" "}
+      and{" "}
+      <span class="emphasis hero-emphasis angled-text-right-1 background-dark-blue text-color-white border-2">
         engineering
+      </span>{" "}
+      <div class="margin-top-2">
+        skills to create{" "}
+        <span class="emphasis hero-emphasis angled-text-left-2 background-dark-red text-color-white border-2">
+          cohesive
         </span>{" "}
-        <div class="margin-top-2">
-    
-skills to create  
-{" "}<span class="emphasis hero-emphasis angled-text-left-2 background-dark-red text-color-white border-2">cohesive
-        </span>{" "}
-        
-        and 
-        {" "}<span class="emphasis hero-emphasis angled-text-right-1 background-dark-purple text-color-white border-2">
-           functional
+        and{" "}
+        <span class="emphasis hero-emphasis angled-text-right-1 background-dark-purple text-color-white border-2">
+          functional
         </span>{" "}
         digital experiences.
-        </div>  
-      </Heading>
-      
-</div>
-  </Section>
+      </div>
+    </Heading>
+  </div>
+</Section>
 
-  <style>
-    .drop-shadow-text {
-  /* Syntax: offset-x | offset-y | blur-radius | color */
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-}
+<style>
+  .drop-shadow-text {
+    /* Syntax: offset-x | offset-y | blur-radius | color */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  }
 
-.border-2 {
-  border-width: 2px;
-  border-style: solid;  
-}
+  .border-2 {
+    border-width: 2px;
+    border-style: solid;
+  }
 
-.tracking-tight {
-  letter-spacing: -0.05em;
-}   
+  .tracking-tight {
+    letter-spacing: -0.05em;
+  }
 
-.particle {
-  background-color: var(--color-yellow);
-  padding: 0.3em;
-  vertical-align: middle;
-  color: #000000;
-  border-radius: var(--radius-small);
-}
-.hero-tile {
-display: flex;
-      flex-direction: column;
-      min-width: 0;
-      padding: var(--space-4);
-      background: var(--color-white);
-      border: var(--border-width) solid var(--color-black);
-      border-radius: calc(var(--radius-main) * 1.5);
-      color: var(--text);
-      text-shadow: none;
-      box-shadow: 10px 10px 2px 1px rgba(18, 18, 18, 0.2);
-    }
-
-
-  </style>
+  .tile-yellow {
+    background-color: var(--color-yellow);
+    padding: 0.3em;
+    vertical-align: middle;
+    color: #000000;
+    border-radius: var(--radius-small);
+    border: var(--border-width) solid var(--color-black);
+    box-shadow: 10px 10px 2px 1px rgba(18, 18, 18, 0.2);
+  }
+  .hero-tile {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: var(--space-4);
+    background: var(--color-white);
+    border: var(--border-width) solid var(--color-black);
+    border-radius: calc(var(--radius-main) * 1.5);
+    color: var(--text);
+    text-shadow: none;
+    box-shadow: 10px 10px 2px 1px rgba(18, 18, 18, 0.2);
+  }
+</style>
