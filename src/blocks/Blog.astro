@@ -159,12 +159,10 @@ const visiblePosts: Post[] = posts.filter(
         & .post-thumbnails_excerpt {
           display: -webkit-box;
         }
-        & .post-thumbnails_item {
-          padding-block: var(--space-5);
-        }
       }
       @media (width >= 64rem) {
         grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+        column-gap: calc(var(--space-8) + var(--space-4));
         & .post-thumbnails_intro {
           position: sticky;
           top: calc(var(--nav-height) + var(--space-5));
@@ -209,25 +207,23 @@ const visiblePosts: Post[] = posts.filter(
       list-style: none;
       margin: 0;
       padding: 0;
+      display: grid;
+      gap: var(--space-5);
     }
     .post-thumbnails_item {
-      padding-block: var(--space-4);
-      & + & {
-        border-top: var(--border-width) solid var(--border);
-      }
-      &:first-child {
-        padding-top: 0;
-      }
-      &:last-child {
-        padding-bottom: 0;
-      }
+      min-width: 0;
     }
     .post-thumbnails_article {
       position: relative;
       display: flex;
       align-items: start;
       gap: var(--space-3);
-      border-radius: var(--radius-main);
+      padding: var(--space-4);
+      background: var(--color-white);
+      border: var(--border-width) solid var(--color-black);
+      border-radius: calc(var(--radius-main) * 1.5);
+      color: var(--text);
+      box-shadow: 10px 10px 2px 1px rgba(18, 18, 18, 0.2);
       &:has(.post-thumbnails_link:focus-visible) {
         outline: var(--focus-width) solid var(--link-text);
         outline-offset: var(--space-1);
